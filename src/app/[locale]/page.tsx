@@ -1,5 +1,5 @@
-import Authenticator from "@/components/tools/Authenticator";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <Authenticator />;
+  redirect("/content-planner");
 }

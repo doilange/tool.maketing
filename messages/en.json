@@ -1,5 +1,6 @@
 {
   "Navbar": {
+    "contentPlanner": "Content Planner",
     "2fa": "2FA Auth",
     "tool": "Text Tool",
     "checkIp": "Check IP",

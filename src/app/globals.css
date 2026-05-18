@@ -67,3 +67,39 @@
     transform: translateX(100%);
   }
 }
+
+/* ==========================================
+   Content Planner Theme
+   ========================================== */
+.planner-theme {
+  background:
+    radial-gradient(1100px 600px at 0% 0%, #e9d5ff 0%, transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, #fbcfe8 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 100%, #fed7aa 0%, transparent 55%),
+    radial-gradient(700px 400px at 0% 100%, #bfdbfe 0%, transparent 55%),
+    linear-gradient(180deg, #fbf7ff 0%, #ffffff 100%);
+  background-attachment: fixed;
+  color: #1e293b;
+}
+
+/* Content Planner gradient utilities (Tailwind v4 compatible) */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 35%, #ec4899 65%, #f97316 100%);
+}
+@utility bg-brand-soft {
+  background-image: linear-gradient(135deg, #f5ecff 0%, #fde6f3 40%, #ffeede 100%);
+}
+@utility bg-pink-gradient {
+  background-image: linear-gradient(135deg, #f5ecff 0%, #fde6f3 40%, #ffeede 100%);
+}
+@utility bg-pink-gradient-strong {
+  background-image: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 35%, #ec4899 65%, #f97316 100%);
+}
+
+/* Planner Scrollbar */
+.planner-theme ::-webkit-scrollbar { width: 10px; height: 10px; }
+.planner-theme ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #c4b5fd 0%, #f9a8d4 100%);
+  border-radius: 10px;
+}
+.planner-theme ::-webkit-scrollbar-track { background: transparent; }

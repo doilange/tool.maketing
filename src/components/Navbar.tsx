@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Menu, X, Shield, FileText, MapPin, CheckCircle, Search, FileEdit, HelpCircle, Languages, Link2 } from "lucide-react";
+import { Moon, Sun, Menu, X, Shield, FileText, MapPin, CheckCircle, Search, FileEdit, HelpCircle, Languages, Link2, CalendarDays } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
@@ -23,7 +23,8 @@ export function Navbar() {
   }, []);
 
   const navItems = [
-    { name: t("2fa"), href: "/", icon: Shield },
+    { name: t("contentPlanner") || "Content Planner", href: "/content-planner", icon: CalendarDays },
+    { name: t("2fa"), href: "/2fa", icon: Shield },
     { name: t("tool"), href: "/tool", icon: FileEdit },
     { name: t("checkIp"), href: "/check-ip", icon: MapPin },
     { name: t("checkUid"), href: "/check-uid", icon: CheckCircle },
@@ -66,7 +67,7 @@ export function Navbar() {
               <div className="relative w-8 h-8 rounded-full overflow-hidden shadow-sm group-hover:scale-105 transition-transform duration-300">
                 <Image src="/logo.png" alt="2FA Tools Logo" fill className="object-cover" sizes="32px" priority />
               </div>
-              <span className="font-bold text-xl tracking-tight hidden sm:inline-block">2FA Tools</span>
+              <span className="font-bold text-xl tracking-tight hidden sm:inline-block">Tool Marketing</span>
             </Link>
           </div>
 
