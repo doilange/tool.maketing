@@ -9,8 +9,8 @@ import { getMessages } from "next-intl/server";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "2FA Tools - Secure & Private Multi-Tool Platform",
-  description: "Self-hosted secure 2FA authenticator, text tools, and more.",
+  title: "Tool maketing - Content & Marketing Management",
+  description: "Self-hosted secure marketing content planner and tool platform.",
 };
 
 export default async function RootLayout({
