@@ -28,8 +28,7 @@ export default function LoginPage() {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        router.push("/content-planner");
-        router.refresh();
+        window.location.href = "/content-planner";
       } else {
         const { error } = await supabase.auth.signUp({
           email,
