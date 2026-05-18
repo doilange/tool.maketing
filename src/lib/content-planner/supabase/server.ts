@@ -9,10 +9,12 @@ export function createClient() {
     {
       cookies: {
         get(name: string) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return (cookieStore as any).get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (cookieStore as any).set({ name, value, ...options });
           } catch {
             // called from a Server Component - ignore
@@ -20,6 +22,7 @@ export function createClient() {
         },
         remove(name: string, options: CookieOptions) {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (cookieStore as any).set({ name, value: "", ...options });
           } catch {
             // ignore
