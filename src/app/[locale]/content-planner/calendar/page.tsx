@@ -4,7 +4,7 @@ import { useData } from "@/components/content-planner/data-provider";
 import { Card } from "@/components/content-planner/ui/card";
 import { Button } from "@/components/content-planner/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ColorTag, PostBadge } from "@/components/content-planner/status-badge";
+// Removed unused imports from status-badge
 import { TaskDetailModal } from "@/components/content-planner/task-detail-modal";
 import type { ContentTask } from "@/lib/content-planner/types";
 import { cn } from "@/lib/content-planner/utils";

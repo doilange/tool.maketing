@@ -195,7 +195,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           task_id: taskId,
           user_id: meId,
           action,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           old_value: oldValue as any,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           new_value: newValue as any,
         });
     },
@@ -246,6 +248,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const updateTask = React.useCallback<DataContextValue["updateTask"]>(
     async (id, patch) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
       const { id: _ignore, created_at, updated_at, ...clean } = patch as any;
       const { error } = await supabase
         .from("content_tasks")

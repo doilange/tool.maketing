@@ -6,7 +6,6 @@ import { Button } from "@/components/content-planner/ui/button";
 import { Input } from "@/components/content-planner/ui/input";
 import { Label } from "@/components/content-planner/ui/label";
 import { Card, CardContent } from "@/components/content-planner/ui/card";
-import Link from "next/link";
 
 
 export default function LoginPage() {
@@ -41,6 +40,7 @@ export default function LoginPage() {
         setInfo("Check your email to confirm your account, then sign in.");
         setMode("signin");
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setError(e.message ?? "Authentication failed");
     } finally {

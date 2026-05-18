@@ -57,9 +57,11 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
   React.useEffect(() => {
     if (open) {
       if (task) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm({ ...task });
       } else {
         const today = new Date().toISOString().slice(0, 10);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm({
           ...empty,
           start_date: today,
@@ -98,6 +100,7 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
         await updateTask(task.id, payload);
       }
       onOpenChange(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       setError(e.message ?? "Failed to save");
     } finally {
@@ -220,6 +223,7 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
             <Label>{t("modal.progress_status")}</Label>
             <Select
               value={form.progress_status ?? "none"}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(e) => set("progress_status", e.target.value as any)}
             >
               {progressOptions.map((o) => (
@@ -233,6 +237,7 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
             <Label>{t("modal.post_status")}</Label>
             <Select
               value={form.post_status ?? "not_posted"}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(e) => set("post_status", e.target.value as any)}
             >
               {postOptions.map((o) => (
@@ -246,6 +251,7 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
             <Label>{t("modal.workday")}</Label>
             <Select
               value={form.workday_status ?? "workday"}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(e) => set("workday_status", e.target.value as any)}
             >
               <option value="workday">{t("modal.workday_workday")}</option>

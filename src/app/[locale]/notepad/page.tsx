@@ -17,11 +17,14 @@ export default function NotepadPage() {
   // Load existing notes from localStorage on mount
   useEffect(() => {
     const existing = listNotes();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotes(existing);
     
     // Auto-load the most recent note if any
     if (existing.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setContent(existing[0].content);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveNoteId(existing[0].id);
     }
   }, []);

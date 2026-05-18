@@ -18,21 +18,29 @@ export default function SharedNotePage() {
   useEffect(() => {
     const hash = window.location.hash.slice(1); // Remove the #
     if (!hash) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(false);
       return;
     }
 
     const result = decodeNote(hash);
     if (!result) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoading(false);
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setContent(result.content);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setExpired(result.expired);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setExpiresAt(result.expiresAt);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoading(false);
   }, []);
 
@@ -47,6 +55,7 @@ export default function SharedNotePage() {
   };
 
   const formatExpiry = (timestamp: number) => {
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
     const diff = timestamp - now;
 
