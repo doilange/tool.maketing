@@ -4,18 +4,27 @@ import { DataProvider, useData } from "@/components/content-planner/data-provide
 import { LanguageProvider } from "@/lib/content-planner/i18n";
 import { Sidebar } from "@/components/content-planner/sidebar";
 import { Topbar } from "@/components/content-planner/topbar";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import * as React from "react";
 
 function Inner({ children }: { children: React.ReactNode }) {
   const { loading, me } = useData();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Check if we're on the login page
+  const isLoginPage = pathname?.replace(/^\/(en|th)/, "").startsWith("/content-planner/login");
 
   React.useEffect(() => {
-    if (!loading && !me) {
+    if (!loading && !me && !isLoginPage) {
       router.push("/content-planner/login");
     }
-  }, [loading, me, router]);
+  }, [loading, me, router, isLoginPage]);
+
+  // Login page: render without sidebar/topbar
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen flex planner-theme">
