@@ -6,7 +6,6 @@ import { Button } from "@/components/content-planner/ui/button";
 import { Input } from "@/components/content-planner/ui/input";
 import { Label } from "@/components/content-planner/ui/label";
 import { Card, CardContent } from "@/components/content-planner/ui/card";
-import Image from "next/image";
 import Link from "next/link";
 
 
@@ -63,7 +62,6 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-2 mb-6">
-          <Image src="/planner-logo.svg" alt="Logo" width={44} height={44} className="h-11 w-11 drop-shadow-sm" priority />
           <div className="text-xl font-bold text-slate-800">Content Planner</div>
         </div>
         <Card>
