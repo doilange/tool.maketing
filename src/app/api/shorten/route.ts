@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from "@supabase/supabase-js";
 import { nanoid } from 'nanoid';
+import { getDb } from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
@@ -25,34 +25,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid URL provided' }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json(
-        { error: 'Database configuration missing' },
-        { status: 500 }
-      );
-    }
-
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { persistSession: false },
-    });
-
+    const db = getDb();
     const id = nanoid(6);
 
-    const { error } = await adminClient
-      .from('short_links')
-      .insert([
-        { id, original_url: validUrl.href }
-      ]);
-
-    if (error) {
-      console.error('Supabase error inserting short link:', error);
+    try {
+      const stmt = db.prepare('INSERT INTO short_links (id, original_url, created_at) VALUES (?, ?, ?)');
+      stmt.run(id, validUrl.href, Math.floor(Date.now() / 1000));
+    } catch (dbError) {
+      console.error('SQLite error inserting short link:', dbError);
       return NextResponse.json({ error: 'Failed to create short link' }, { status: 500 });
     }
 
-    // Return the short URL path (client will prepend the domain)
     return NextResponse.json({ id, shortUrl: `/s/${id}` });
 
   } catch (err) {

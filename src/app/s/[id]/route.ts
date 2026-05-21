@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from "@supabase/supabase-js";
+import { getDb } from '@/lib/db';
 
 export async function GET(
   request: Request,
@@ -11,28 +11,15 @@ export async function GET(
     return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const db = getDb();
 
-  if (!supabaseUrl || !supabaseServiceKey) {
-    return NextResponse.json({ error: 'Database configuration missing' }, { status: 500 });
-  }
+  const row = db.prepare('SELECT original_url FROM short_links WHERE id = ?').get(id) as { original_url: string } | undefined;
 
-  const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { persistSession: false },
-  });
-
-  const { data, error } = await adminClient
-    .from('short_links')
-    .select('original_url')
-    .eq('id', id)
-    .single();
-
-  if (error || !data?.original_url) {
+  if (!row?.original_url) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  const validUrl = new URL(data.original_url);
+  const validUrl = new URL(row.original_url);
 
   const html = `<!DOCTYPE html>
 <html>

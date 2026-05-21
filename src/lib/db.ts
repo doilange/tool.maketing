@@ -28,5 +28,14 @@ export function getDb() {
     )
   `);
 
+  // Short links table for URL shortener
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS short_links (
+      id TEXT PRIMARY KEY,
+      original_url TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+  `);
+
   return db;
 }
