@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Trash2, Code2, Check, Sparkles } from "lucide-react";
+import { Copy, Trash2, Code2, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export default function HtmlExtractorTool() {

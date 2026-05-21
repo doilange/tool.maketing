@@ -10,7 +10,7 @@ import type {
 
 export type Lang = "th" | "en";
 
-const STORAGE_KEY = "cp_lang";
+
 
 type Dict = Record<string, string>;
 
@@ -537,7 +537,6 @@ export function useActivityAction() {
     (action: string) => {
       // e.g. "task_created" -> "activity.task_created"
       const key = `activity.${action}`;
-      // @ts-ignore - we know this might not strictly be in the keys if it's dynamic
       const translated = t(key);
       return translated !== key ? translated : action.replace(/_/g, " ");
     },

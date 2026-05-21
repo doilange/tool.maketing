@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Play, Pause, RotateCcw, Coffee, Briefcase, SkipForward, Volume2, VolumeX, Sparkles, Timer } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Briefcase, SkipForward, Volume2, VolumeX, Timer } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 type PomodoroMode = "work" | "shortBreak" | "longBreak";
