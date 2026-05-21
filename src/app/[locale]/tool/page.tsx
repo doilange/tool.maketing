@@ -67,9 +67,17 @@ function ToolPageContent() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[calc(100vh-4rem)] bg-background">
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-4rem)] planner-theme overflow-hidden relative select-none">
+      {/* Slow-floating background glow backlights */}
+      <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] rounded-full bg-violet-400/10 dark:bg-violet-500/5 blur-[80px] pointer-events-none animate-float-slow" />
+      <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] rounded-full bg-pink-400/10 dark:bg-pink-500/5 blur-[90px] pointer-events-none animate-float-delayed" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full bg-blue-300/10 dark:bg-blue-600/5 blur-[100px] pointer-events-none animate-pulse-soft" />
+
+      {/* Glassmorphic Sidebar */}
       <ToolSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-      <div className="flex-1 w-full bg-muted/20 overflow-y-auto">
+
+      {/* Tool Viewer content container */}
+      <div className="flex-1 w-full bg-white/5 dark:bg-[#0a1128]/5 backdrop-blur-[2px] overflow-y-auto z-10">
         {renderTool()}
       </div>
     </div>
@@ -78,7 +86,7 @@ function ToolPageContent() {
 
 export default function ToolPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen planner-theme">Loading...</div>}>
       <ToolPageContent />
     </Suspense>
   );

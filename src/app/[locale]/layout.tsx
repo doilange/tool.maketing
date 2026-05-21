@@ -9,8 +9,8 @@ import { getMessages } from "next-intl/server";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Tool maketing - Content & Marketing Management",
-  description: "Self-hosted secure marketing content planner and tool platform.",
+  title: "MT Content Planner - Content & Marketing Management",
+  description: "Self-hosted secure marketing content planner and multi-tool platform.",
 };
 
 export default async function RootLayout({
@@ -28,7 +28,7 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen flex flex-col bg-background text-foreground`}>
         <NextIntlClientProvider messages={messages} locale={locale}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme={false} disableTransitionOnChange>
             <Navbar />
             <main className="flex-grow">
               {children}

@@ -105,7 +105,7 @@ export default function CheckIpPage() {
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=en`,
-            { headers: { 'User-Agent': '2FA-Tools/1.0' } }
+            { headers: { 'User-Agent': 'MT-Content-Planner/1.0' } }
           );
           const geoData = await res.json();
           

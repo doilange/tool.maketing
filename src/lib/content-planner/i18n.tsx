@@ -1,5 +1,7 @@
 "use client";
 import * as React from "react";
+import { useLocale } from "next-intl";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import type {
   ApprovalStatus,
   PostStatus,
@@ -51,6 +53,23 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "dashboard.recent_activity": "กิจกรรมล่าสุด",
     "dashboard.recent_activity_subtitle": "ทีมของคุณกำลังทำอะไรอยู่",
     "dashboard.no_activity": "ยังไม่มีกิจกรรม",
+    "dashboard.sort_by_due_date": "ตามกำหนดเวลา 📅",
+    "dashboard.sort_by_smart": "จัดลำดับด่วน/เสร็จไว 🧠",
+    "priority.critical": "🔥 ด่วนที่สุด",
+    "priority.quick_urgent": "⚡ งานด่วนเสร็จไว",
+    "priority.quick_win": "💡 ทำง่ายเสร็จไว",
+    "priority.scheduled": "📅 ตามกำหนดการ",
+    "reminder.title_creator": "👋 คุณมีงานสำคัญที่ต้องทำในวันนี้!",
+    "reminder.title_manager": "👋 มีงานรออนุมัติและตรวจความเรียบร้อยอยู่ครับ!",
+    "reminder.subtitle_creator": "งานนี้ได้รับคะแนนด่วนพิเศษ แนะนำให้รีบดำเนินงานให้เสร็จเพื่อเป้าหมายของสัปดาห์นี้ครับ",
+    "reminder.subtitle_manager": "มีงานที่ส่งบรีฟร่างโพสต์/ค้างการตรวจสอบอยู่ รบกวนรีวิวและพิจารณาอนุมัติงานชิ้นนี้ครับ",
+    "reminder.button_start_work": "เริ่มทำงานนี้เลย 🚀",
+    "reminder.button_approve_instant": "อนุมัติทันที ✅",
+    "reminder.button_review_detail": "ตรวจรายละเอียด 🔍",
+    "reminder.button_acknowledge": "รับทราบ / เข้าใจแล้ว",
+    "reminder.button_later": "ไว้ตรวจทีหลัง 📅",
+    "reminder.checkbox_snooze": "ไม่ต้องแสดงป๊อปอัปแจ้งเตือนนี้อีกเป็นเวลา 3 ชั่วโมง",
+    "reminder.success_approve": "อนุมัติงานสำเร็จ!",
 
     // planner
     "planner.title": "Content Planner",
@@ -66,6 +85,7 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "planner.all_post_status": "ทุกสถานะการโพสต์",
     "planner.no_match": "ไม่พบงานที่ตรงกับตัวกรอง",
     "planner.delete_confirm": "ลบงานนี้?",
+    "planner.delete_failed": "ลบไม่สำเร็จ",
 
     // export menu
     "export.button": "ดาวน์โหลด CSV",
@@ -137,9 +157,21 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "detail.approve": "อนุมัติ",
     "detail.request_edits": "ขอแก้ไข",
     "detail.reject": "ปฏิเสธ",
+    "detail.approving": "กำลังดำเนินการ…",
+    "detail.approved_success": "✅ อนุมัติเรียบร้อยแล้ว!",
+    "detail.needs_edits_success": "📝 ส่งคำขอแก้ไขเรียบร้อยแล้ว!",
+    "detail.rejected_success": "❌ ปฏิเสธงานเรียบร้อยแล้ว",
     "detail.no_permission_approval": "เฉพาะผู้จัดการเท่านั้นที่เปลี่ยนสถานะอนุมัติได้",
     "detail.activity": "กิจกรรม",
     "detail.no_activity": "ยังไม่มีกิจกรรม",
+    "activity.task_created": "สร้างงานใหม่",
+    "activity.task_updated": "อัปเดตข้อมูลงาน",
+    "activity.task_deleted": "ลบงาน",
+    "activity.comment_added": "เพิ่มความคิดเห็น",
+    "activity.approval_pending": "ตั้งสถานะเป็นรออนุมัติ",
+    "activity.approval_approved": "อนุมัติงาน",
+    "activity.approval_needs_edits": "ส่งคำขอแก้ไขงาน",
+    "activity.approval_rejected": "ปฏิเสธงาน",
     "detail.comments": "ความคิดเห็น",
     "detail.write_comment": "เขียนความคิดเห็น…",
     "detail.be_first": "เป็นคนแรกที่แสดงความคิดเห็น",
@@ -178,6 +210,21 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "role.manager": "ผู้จัดการ",
     "role.creator": "ครีเอเตอร์",
     "role.viewer": "ผู้ชม",
+
+    // login
+    "login.welcome_back": "ยินดีต้อนรับกลับ",
+    "login.create_account": "สร้างบัญชีใหม่",
+    "login.signin_subtitle": "เข้าสู่ระบบเพื่อจัดการแผนงานคอนเทนต์ของคุณ",
+    "login.signup_subtitle": "เริ่มต้นวางแผนงานคอนเทนต์ร่วมกับทีมของคุณ",
+    "login.full_name": "ชื่อ-นามสกุล",
+    "login.email": "อีเมล",
+    "login.password": "รหัสผ่าน",
+    "login.signin": "เข้าสู่ระบบ",
+    "login.new_here": "ผู้ใช้ใหม่ใช่ไหม?",
+    "login.already_have_account": "มีบัญชีอยู่แล้ว?",
+    "login.please_wait": "โปรดรอสักครู่…",
+    "login.auth_failed": "การตรวจสอบสิทธิ์ล้มเหลว",
+    "login.check_email": "ตรวจสอบอีเมลของคุณเพื่อยืนยันบัญชี จากนั้นเข้าสู่ระบบ",
   },
   en: {
     "common.welcome_back": "Welcome back,",
@@ -214,6 +261,23 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "dashboard.recent_activity": "Recent activity",
     "dashboard.recent_activity_subtitle": "What your team is doing",
     "dashboard.no_activity": "No activity yet.",
+    "dashboard.sort_by_due_date": "By Due Date 📅",
+    "dashboard.sort_by_smart": "Smart Priority 🧠",
+    "priority.critical": "🔥 Critical Urgent",
+    "priority.quick_urgent": "⚡ Quick Urgent Win",
+    "priority.quick_win": "💡 Quick Win",
+    "priority.scheduled": "📅 Scheduled",
+    "reminder.title_creator": "👋 You have an important task to do today!",
+    "reminder.title_manager": "👋 Tasks are pending your review and approval!",
+    "reminder.subtitle_creator": "This task is prioritized based on deadline and effort level. We recommend finishing this first.",
+    "reminder.subtitle_manager": "There is a task waiting for review. Please approve or write your feedback comments.",
+    "reminder.button_start_work": "Start Working Now 🚀",
+    "reminder.button_approve_instant": "Approve Instantly ✅",
+    "reminder.button_review_detail": "Review Details 🔍",
+    "reminder.button_acknowledge": "Acknowledge",
+    "reminder.button_later": "Review Later 📅",
+    "reminder.checkbox_snooze": "Don't show this notification again for 3 hours",
+    "reminder.success_approve": "Task approved successfully!",
 
     "planner.title": "Content Planner",
     "planner.subtitle": "Manage your content pipeline like a pro spreadsheet",
@@ -228,6 +292,7 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "planner.all_post_status": "All post status",
     "planner.no_match": "No tasks match your filters.",
     "planner.delete_confirm": "Delete this task?",
+    "planner.delete_failed": "Delete failed",
 
     "export.button": "Download CSV",
     "export.last_7": "Last 7 days",
@@ -295,9 +360,21 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "detail.approve": "Approve",
     "detail.request_edits": "Request edits",
     "detail.reject": "Reject",
+    "detail.approving": "Processing…",
+    "detail.approved_success": "✅ Approved successfully!",
+    "detail.needs_edits_success": "📝 Edit request sent!",
+    "detail.rejected_success": "❌ Task rejected",
     "detail.no_permission_approval": "Only managers can change approval status.",
     "detail.activity": "Activity",
     "detail.no_activity": "No activity yet.",
+    "activity.task_created": "Created task",
+    "activity.task_updated": "Updated task",
+    "activity.task_deleted": "Deleted task",
+    "activity.comment_added": "Added a comment",
+    "activity.approval_pending": "Changed approval to pending",
+    "activity.approval_approved": "Approved the task",
+    "activity.approval_needs_edits": "Requested edits",
+    "activity.approval_rejected": "Rejected the task",
     "detail.comments": "Comments",
     "detail.write_comment": "Write a comment…",
     "detail.be_first": "Be the first to comment.",
@@ -334,6 +411,21 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "role.manager": "Manager",
     "role.creator": "Creator",
     "role.viewer": "Viewer",
+
+    // login
+    "login.welcome_back": "Welcome back",
+    "login.create_account": "Create account",
+    "login.signin_subtitle": "Sign in to manage your content plans",
+    "login.signup_subtitle": "Start planning content with your team",
+    "login.full_name": "Full name",
+    "login.email": "Email",
+    "login.password": "Password",
+    "login.signin": "Sign in",
+    "login.new_here": "New here?",
+    "login.already_have_account": "Already have an account?",
+    "login.please_wait": "Please wait…",
+    "login.auth_failed": "Authentication failed",
+    "login.check_email": "Check your email to confirm your account, then sign in.",
   },
 };
 
@@ -397,27 +489,17 @@ type LangContextValue = {
 
 const LangContext = React.createContext<LangContextValue | null>(null);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = React.useState<Lang>("th");
 
-  React.useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (saved === "th" || saved === "en") setLangState(saved);
-    } catch {
-      // ignore
-    }
-  }, []);
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const nextLocale = useLocale();
+  const lang = (nextLocale === "en" ? "en" : "th") as Lang;
+  const router = useRouter();
+  const pathname = usePathname();
 
   const setLang = React.useCallback((l: Lang) => {
-    setLangState(l);
-    try {
-      localStorage.setItem(STORAGE_KEY, l);
-    } catch {
-      // ignore
-    }
-  }, []);
+    if (l === lang) return;
+    router.replace(pathname, { locale: l });
+  }, [lang, pathname, router]);
 
   const t = React.useCallback(
     (key: string, vars?: Record<string, string | number>) => {
@@ -444,7 +526,23 @@ export function useLang() {
 }
 
 export function useT() {
-  return useLang().t;
+  const ctx = React.useContext(LangContext);
+  if (!ctx) throw new Error("useT must be used within LanguageProvider");
+  return ctx.t;
+}
+
+export function useActivityAction() {
+  const t = useT();
+  return React.useCallback(
+    (action: string) => {
+      // e.g. "task_created" -> "activity.task_created"
+      const key = `activity.${action}`;
+      // @ts-ignore - we know this might not strictly be in the keys if it's dynamic
+      const translated = t(key);
+      return translated !== key ? translated : action.replace(/_/g, " ");
+    },
+    [t]
+  );
 }
 
 export function useProgressOptions() {

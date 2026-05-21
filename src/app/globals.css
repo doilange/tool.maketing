@@ -17,6 +17,23 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  --animate-pulse-soft: pulse-soft 5s ease-in-out infinite;
+  --animate-float-slow: float-slow 12s ease-in-out infinite;
+  --animate-float-delayed: float-delayed 15s ease-in-out infinite;
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 0.15; transform: scale(1.02); }
+    50% { opacity: 0.3; transform: scale(1.07); }
+  }
+  @keyframes float-slow {
+    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+    50% { transform: translate(-10px, -20px) rotate(2deg); }
+  }
+  @keyframes float-delayed {
+    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+    50% { transform: translate(15px, 20px) rotate(-2deg); }
+  }
 }
 
 :root {
@@ -37,28 +54,31 @@
 }
 
 .dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --border: #27272a;
-  --input: #27272a;
-  --primary: #fafafa;
-  --primary-foreground: #18181b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --destructive: #dc2626;
+  --background: #0a1128;
+  --foreground: #f1f5f9;
+  --card: #131a30;
+  --card-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --border: #223056;
+  --input: #223056;
+  --primary: #ffffff;
+  --primary-foreground: #0a1128;
+  --secondary: #1c2541;
+  --secondary-foreground: #f1f5f9;
+  --destructive: #ef4444;
   --destructive-foreground: #fafafa;
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--border);
   }
+
   body {
-    @apply bg-background text-foreground antialiased transition-colors duration-300;
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background-color 300ms, border-color 300ms, color 300ms;
   }
 }
 
@@ -79,27 +99,67 @@
     radial-gradient(700px 400px at 0% 100%, #bfdbfe 0%, transparent 55%),
     linear-gradient(180deg, #fbf7ff 0%, #ffffff 100%);
   background-attachment: fixed;
-  color: #1e293b;
+  color: var(--foreground);
+}
+
+.dark .planner-theme {
+  background:
+    radial-gradient(1200px 800px at 0% 0%, rgba(59, 130, 246, 0.28) 0%, transparent 65%),
+    radial-gradient(1000px 600px at 100% 0%, rgba(139, 92, 246, 0.22) 0%, transparent 60%),
+    radial-gradient(1000px 600px at 100% 100%, rgba(236, 72, 153, 0.15) 0%, transparent 60%),
+    radial-gradient(800px 500px at 0% 100%, rgba(59, 130, 246, 0.22) 0%, transparent 55%),
+    linear-gradient(180deg, #0a1128 0%, #050a18 100%);
 }
 
 /* Content Planner gradient utilities (Tailwind v4 compatible) */
 @utility bg-brand-gradient {
   background-image: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 35%, #ec4899 65%, #f97316 100%);
 }
+
 @utility bg-brand-soft {
   background-image: linear-gradient(135deg, #f5ecff 0%, #fde6f3 40%, #ffeede 100%);
 }
+
 @utility bg-pink-gradient {
   background-image: linear-gradient(135deg, #f5ecff 0%, #fde6f3 40%, #ffeede 100%);
 }
+
 @utility bg-pink-gradient-strong {
   background-image: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 35%, #ec4899 65%, #f97316 100%);
 }
 
-/* Planner Scrollbar */
-.planner-theme ::-webkit-scrollbar { width: 10px; height: 10px; }
-.planner-theme ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #c4b5fd 0%, #f9a8d4 100%);
-  border-radius: 10px;
+/* Beautiful Modern Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
-.planner-theme ::-webkit-scrollbar-track { background: transparent; }
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.25); /* Sleek translucent violet */
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.5); /* Slightly darker on hover */
+}
+
+/* Dark Mode Scrollbars */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.55);
+}
+
+/* Firefox compatibility */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.25) transparent;
+}

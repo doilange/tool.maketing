@@ -10,7 +10,7 @@ export interface Note {
   updated_at: number;
 }
 
-const STORAGE_KEY = "2fa_tools_notes";
+const STORAGE_KEY = "mt_content_planner_notes";
 
 function generateId(length = 10): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

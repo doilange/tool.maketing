@@ -61,40 +61,58 @@ export default function CalendarPage() {
   const todayKey = key(today);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">{t("calendar.title")}</h1>
-          <p className="text-sm text-slate-500">{t("calendar.subtitle")}</p>
+          <h1 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-brand-gradient select-none">
+            {t("calendar.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("calendar.subtitle")}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setCursor(new Date(year, month - 1, 1))}>
-            <ChevronLeft className="h-4 w-4" />
+        <div className="flex items-center gap-2 self-end sm:self-auto bg-white/40 dark:bg-[#0a1128]/40 border border-white/20 dark:border-white/5 rounded-2xl p-1 backdrop-blur-xl shadow-sm">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCursor(new Date(year, month - 1, 1))}
+            className="h-8 w-8 rounded-xl border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-[#131a30]/60"
+          >
+            <ChevronLeft className="h-4 w-4 text-foreground/80" />
           </Button>
-          <div className="text-sm font-semibold text-slate-700 min-w-[140px] text-center">
+          <div className="text-sm font-bold text-foreground min-w-[130px] text-center select-none">
             {cursor.toLocaleDateString(locale, { month: "long", year: "numeric" })}
           </div>
-          <Button variant="outline" size="icon" onClick={() => setCursor(new Date(year, month + 1, 1))}>
-            <ChevronRight className="h-4 w-4" />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCursor(new Date(year, month + 1, 1))}
+            className="h-8 w-8 rounded-xl border-white/20 dark:border-white/5 hover:bg-white/60 dark:hover:bg-[#131a30]/60"
+          >
+            <ChevronRight className="h-4 w-4 text-foreground/80" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => {
-            const d = new Date();
-            setCursor(new Date(d.getFullYear(), d.getMonth(), 1));
-          }}>
+          <div className="w-[1px] h-5 bg-white/20 dark:bg-white/10 mx-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const d = new Date();
+              setCursor(new Date(d.getFullYear(), d.getMonth(), 1));
+            }}
+            className="h-8 px-3 rounded-xl text-xs font-semibold hover:bg-white/60 dark:hover:bg-[#131a30]/60 text-violet-600 dark:text-violet-400"
+          >
             {t("calendar.today")}
           </Button>
         </div>
       </div>
 
-      <Card>
-        <div className="grid grid-cols-7 border-b border-violet-100 bg-violet-50/60">
+      <Card className="overflow-hidden shadow-2xl border-white/20 dark:border-white/5">
+        <div className="grid grid-cols-7 border-b border-white/10 dark:border-white/5 bg-white/30 dark:bg-white/5 backdrop-blur-md">
           {DAY_KEYS.map((k) => (
-            <div key={k} className="p-2 text-xs font-semibold uppercase tracking-wider text-slate-500 text-center">
+            <div key={k} className="p-3 text-xs font-bold uppercase tracking-wider text-muted-foreground/80 text-center select-none">
               {t(k)}
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-7 bg-white/10 dark:bg-black/5 divide-x divide-y divide-white/10 dark:divide-white/5 -mt-[1px] -ml-[1px]">
           {cells.map((d, i) => {
             const dayTasks = d ? tasksByDay.get(key(d)) ?? [] : [];
             const isToday = d && key(d) === todayKey;
@@ -102,29 +120,32 @@ export default function CalendarPage() {
               <div
                 key={i}
                 className={cn(
-                  "min-h-[120px] border-b border-r border-violet-100 p-2 last:border-r-0 flex flex-col gap-1",
-                  !d && "bg-violet-50/30",
-                  isToday && "bg-violet-50/70"
+                  "min-h-[125px] p-2.5 flex flex-col gap-1.5 transition-all duration-300 relative border-t border-l border-white/10 dark:border-white/5",
+                  !d && "bg-white/5 dark:bg-[#0a1128]/5 opacity-40 cursor-not-allowed",
+                  d && "hover:bg-white/30 dark:hover:bg-white/5",
+                  isToday && "bg-pink-500/5 dark:bg-pink-500/10 after:absolute after:inset-0 after:pointer-events-none after:border after:border-pink-500/20 dark:after:border-pink-500/30"
                 )}
               >
                 {d && (
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-0.5">
                     <div
                       className={cn(
-                        "text-xs font-semibold",
+                        "text-xs font-bold transition-all select-none",
                         isToday
-                          ? "h-6 w-6 rounded-full bg-pink-gradient-strong text-white grid place-items-center"
-                          : "text-slate-500"
+                          ? "h-6 w-6 rounded-lg bg-pink-gradient text-white grid place-items-center shadow-lg shadow-pink-500/15"
+                          : "text-muted-foreground/90 group-hover:text-foreground"
                       )}
                     >
                       {d.getDate()}
                     </div>
                     {dayTasks.length > 0 && (
-                      <span className="text-[10px] text-slate-400">{dayTasks.length}</span>
+                      <span className="text-[10px] font-semibold text-muted-foreground/85 px-1.5 py-0.5 rounded-full bg-white/40 dark:bg-[#131a30]/40 border border-white/25 dark:border-white/5">
+                        {dayTasks.length}
+                      </span>
                     )}
                   </div>
                 )}
-                <div className="flex flex-col gap-1 overflow-hidden">
+                <div className="flex flex-col gap-1 overflow-hidden mt-1">
                   {dayTasks.slice(0, 3).map((t) => {
                     const platform = platforms.find((p) => p.name === t.platform);
                     const product = products.find((p) => p.name === t.product);
@@ -133,23 +154,23 @@ export default function CalendarPage() {
                       <button
                         key={t.id}
                         onClick={() => setDetail(t)}
-                        className="text-left text-[11px] rounded-md px-2 py-1 truncate"
+                        className="text-left text-[11px] rounded-lg px-2 py-1.5 truncate font-medium hover:scale-[1.02] active:scale-[0.98] transition-all border border-transparent shadow-sm hover:shadow-md cursor-pointer"
                         style={{
-                          background: `${color}1a`,
+                          background: `${color}15`,
                           color,
-                          boxShadow: `inset 0 0 0 1px ${color}40`,
+                          borderColor: `${color}25`,
                         }}
                         title={t.topic}
                       >
-                        <span className="font-semibold">
+                        <span className="font-bold opacity-80 mr-1.5">
                           {t.post_time?.slice(0, 5) ?? ""}
-                        </span>{" "}
+                        </span>
                         {t.topic}
                       </button>
                     );
                   })}
                   {dayTasks.length > 3 && (
-                    <div className="text-[10px] text-slate-400 px-1">
+                    <div className="text-[10px] font-semibold text-muted-foreground/70 px-1 mt-0.5">
                       {t("calendar.more", { n: dayTasks.length - 3 })}
                     </div>
                   )}

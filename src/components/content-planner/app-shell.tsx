@@ -13,7 +13,7 @@ function Inner({ children }: { children: React.ReactNode }) {
         <Topbar />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto">
           {loading ? (
-            <div className="text-sm text-slate-500">Loading workspace…</div>
+            <div className="text-sm text-muted-foreground">Loading workspace…</div>
           ) : (
             children
           )}

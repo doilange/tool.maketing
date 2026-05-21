@@ -5,24 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/content-planner/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] shadow-sm select-none cursor-pointer",
   {
     variants: {
       variant: {
         default:
-          "bg-pink-gradient-strong text-white shadow-sm hover:opacity-90",
+          "bg-brand-gradient text-white shadow-md shadow-violet-500/10 hover:opacity-95 hover:shadow-violet-500/20 border-none",
         outline:
-          "border border-violet-200 bg-white text-violet-700 hover:bg-violet-50",
-        ghost: "hover:bg-violet-50 text-violet-700",
-        secondary: "bg-violet-100 text-violet-800 hover:bg-violet-200",
-        destructive: "bg-rose-600 text-white hover:bg-rose-700",
-        subtle: "bg-white/70 text-slate-700 hover:bg-white",
+          "border border-white/20 dark:border-white/10 bg-white/40 dark:bg-[#1c2541]/40 text-violet-600 dark:text-violet-400 hover:bg-white/80 dark:hover:bg-[#1c2541]/60",
+        ghost: "hover:bg-white/40 dark:hover:bg-white/5 text-violet-600 dark:text-violet-400 border-none shadow-none",
+        secondary: "bg-white/50 hover:bg-white/80 dark:bg-[#1c2541]/40 dark:hover:bg-[#1c2541]/60 text-foreground border border-white/10 dark:border-white/5",
+        destructive: "bg-rose-500 text-white hover:bg-rose-600 border-none",
+        subtle: "bg-white/30 dark:bg-black/20 border border-white/10 backdrop-blur text-foreground hover:bg-white/40",
       },
       size: {
-        default: "h-9 px-4",
+        default: "h-10 px-4",
         sm: "h-8 px-3 text-xs",
-        lg: "h-10 px-6",
-        icon: "h-9 w-9",
+        lg: "h-11 px-6",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: { variant: "default", size: "default" },

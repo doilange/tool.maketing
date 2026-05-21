@@ -1,5 +1,5 @@
 /**
- * 2FA Tools — Full Feature Test Suite
+ * MT Content Planner — Full Feature Test Suite
  * Run: node test-all-features.mjs
  * Tests all client-side logic + API endpoints
  */

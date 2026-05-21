@@ -268,7 +268,7 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
             />
           </div>
           <div className="md:col-span-2">
-            <div className="text-xs font-semibold text-slate-700 mb-2 mt-1">
+            <div className="text-xs font-semibold text-foreground mb-2 mt-1">
               {t("modal.posted_urls")}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">

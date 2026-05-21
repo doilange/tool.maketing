@@ -25,7 +25,7 @@ export default function Authenticator() {
       }
 
       const totp = new OTPAuth.TOTP({
-        issuer: "2FA Tool",
+        issuer: "MT Content Planner",
         label: "Authenticator",
         algorithm: "SHA1",
         digits: 6,
@@ -73,122 +73,150 @@ export default function Authenticator() {
   const progressPercentage = (timeLeft / 30) * 100;
 
   return (
-    <div className="container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] relative overflow-hidden">
-      {/* Background gradient decorative elements */}
-      <div className="absolute top-10 left-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10"></div>
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
-
-      <div className="max-w-md w-full relative z-10">
-        <div className="bg-card border border-border shadow-2xl rounded-3xl p-8 relative overflow-hidden">
-          {/* Subtle top border highlight */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
+    <div className="container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] relative overflow-hidden select-none">
+      
+      <div className="max-w-md w-full relative z-10 animate-in fade-in zoom-in-95 duration-500">
+        <div className="relative group/card transition-all duration-300">
           
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4 ring-8 ring-primary/5">
-              <ShieldCheck className="w-8 h-8" />
-            </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
-            <p className="text-muted-foreground mt-2 text-sm">
-              {t("description")}
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="secret" className="text-sm font-semibold text-foreground flex items-center">
-                <KeyRound className="w-4 h-4 mr-2 text-primary" />
-                {t("secretKey")}
-              </label>
-              <div className="relative">
-                <input
-                  id="secret"
-                  type="text"
-                  value={secret}
-                  onChange={(e) => setSecret(e.target.value)}
-                  placeholder={t("placeholder")}
-                  className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-300 text-foreground font-mono text-center tracking-widest placeholder:tracking-normal"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck="false"
-                />
-              </div>
-              {error && (
-                <p className="text-destructive text-sm flex items-center mt-2 animate-in fade-in slide-in-from-top-1">
-                  <AlertCircle className="w-4 h-4 mr-1.5" />
-                  {error}
-                </p>
-              )}
-            </div>
-
-            {code && !error && (
-              <div className="bg-muted rounded-2xl p-6 text-center border border-border/50 relative overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  <div className="text-5xl font-mono font-bold tracking-[0.2em] text-primary drop-shadow-sm flex items-center justify-center ml-2">
-                    {code.slice(0, 3)}
-                    <span className="text-muted-foreground/30 mx-1">-</span>
-                    {code.slice(3, 6)}
-                  </div>
-                  
-                  <div className="flex items-center justify-between w-full mt-4 bg-background/50 backdrop-blur-sm rounded-xl p-2 border border-border/50">
-                    <div className="flex items-center space-x-3 px-3 py-1.5">
-                      <div className="relative w-6 h-6 flex items-center justify-center">
-                        <svg className="w-6 h-6 transform -rotate-90" viewBox="0 0 36 36">
-                          <path
-                            className="text-border"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className={`${timeLeft <= 5 ? "text-destructive" : "text-primary"} transition-all duration-1000 ease-linear`}
-                            strokeDasharray={`${progressPercentage}, 100`}
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <span className={`absolute text-[10px] font-bold ${timeLeft <= 5 ? "text-destructive animate-pulse" : "text-foreground"}`}>
-                          {timeLeft}
-                        </span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleCopy}
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background ${
-                        copied 
-                        ? "bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20 focus:ring-green-500/50" 
-                        : "bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary/50"
-                      }`}
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="w-4 h-4" />
-                          <span>{t("copied")}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4" />
-                          <span>{t("copyCode")}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
+          {/* Outer glowing halo wrap */}
+          <div className="absolute inset-0 bg-brand-gradient opacity-10 dark:opacity-15 blur-2xl rounded-3xl scale-[1.02] pointer-events-none transition-all duration-300 group-hover/card:opacity-15 dark:group-hover/card:opacity-20" />
+          
+          {/* Glowing gradient border line */}
+          <div className="absolute inset-0 bg-brand-gradient opacity-20 dark:opacity-30 rounded-3xl p-[1px] pointer-events-none" />
+          
+          {/* The Glassmorphism card container */}
+          <div className="relative bg-white/70 dark:bg-[#131a30]/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-2xl rounded-3xl p-8 overflow-hidden">
+            
+            {/* Subtle top border highlight */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-50"></div>
+            
+            <div className="text-center mb-8">
+              {/* Glow circle icon container */}
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-gradient p-[1px] mb-4 shadow-lg shadow-violet-500/20 dark:shadow-violet-950/40 transition-transform duration-300 group-hover/card:scale-105">
+                <div className="w-full h-full bg-white dark:bg-[#131a30] rounded-[15px] flex items-center justify-center">
+                  <ShieldCheck className="w-8 h-8 text-violet-500 dark:text-violet-400 animate-pulse-soft" />
                 </div>
               </div>
-            )}
-          </div>
-          
-          <div className="mt-8 pt-6 relative">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-            <p className="text-xs text-muted-foreground flex items-center justify-center bg-background/50 py-2 rounded-lg inline-flex w-full">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-primary/70" />
-              {t("privacyNotice")}
-            </p>
+              
+              <h1 className="text-2xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-brand-gradient dark:from-white dark:to-slate-200">
+                {t("title")}
+              </h1>
+              <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
+                {t("description")}
+              </p>
+            </div>
+
+            <div className="space-y-5">
+              
+              {/* Secret key field */}
+              <div className="space-y-1.5">
+                <label htmlFor="secret" className="text-xs font-semibold tracking-wide uppercase text-muted-foreground/90 pl-1 flex items-center">
+                  <KeyRound className="w-4 h-4 mr-1.5 text-violet-500" />
+                  {t("secretKey")}
+                </label>
+                <div className="relative group/input">
+                  <input
+                    id="secret"
+                    type="text"
+                    value={secret}
+                    onChange={(e) => setSecret(e.target.value)}
+                    placeholder={t("placeholder")}
+                    className="w-full px-4 py-3 bg-white/40 dark:bg-[#0a1128]/40 border border-border/85 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10 transition-all rounded-xl text-foreground font-mono text-center tracking-widest placeholder:tracking-normal focus:outline-none"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
+                  />
+                </div>
+                
+                {error && (
+                  <div className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-500/20 bg-rose-500/10 backdrop-blur-md animate-in fade-in slide-in-from-top-1 duration-200 mt-2">
+                    <AlertCircle className="w-4.5 h-4.5 text-rose-500 shrink-0 mt-0.5" />
+                    <span className="text-xs font-medium text-rose-600 dark:text-rose-400 leading-normal">
+                      {error}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Glowing Glass Code Display Area */}
+              {code && !error && (
+                <div className="bg-white/40 dark:bg-[#0a1128]/40 border border-white/15 dark:border-white/5 rounded-2xl p-6 text-center relative overflow-hidden animate-in zoom-in-95 duration-300">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    
+                    {/* Glossy Gradient Code Text */}
+                    <div className="text-5xl font-mono font-extrabold tracking-[0.2em] text-foreground bg-clip-text text-transparent bg-brand-gradient dark:from-white dark:to-slate-200 drop-shadow-sm flex items-center justify-center ml-2">
+                      {code.slice(0, 3)}
+                      <span className="text-muted-foreground/30 mx-1">-</span>
+                      {code.slice(3, 6)}
+                    </div>
+                    
+                    {/* Sub-bar displaying timer & Copy button */}
+                    <div className="flex items-center justify-between w-full mt-4 bg-white/50 dark:bg-[#0a1128]/50 backdrop-blur-sm rounded-xl p-2 border border-white/10 dark:border-white/5 shadow-sm">
+                      <div className="flex items-center space-x-3 px-3 py-1.5">
+                        <div className="relative w-6 h-6 flex items-center justify-center">
+                          <svg className="w-6 h-6 transform -rotate-90" viewBox="0 0 36 36">
+                            <circle
+                              className="text-border dark:text-white/5"
+                              cx="18"
+                              cy="18"
+                              r="15.9155"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3.5"
+                            />
+                            <circle
+                              className={`${timeLeft <= 5 ? "text-rose-500 animate-pulse" : "text-violet-500 dark:text-violet-400"} transition-all duration-1000 ease-linear`}
+                              strokeDasharray={`${progressPercentage}, 100`}
+                              cx="18"
+                              cy="18"
+                              r="15.9155"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3.5"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <span className={`absolute text-[10px] font-extrabold ${timeLeft <= 5 ? "text-rose-500 animate-pulse" : "text-foreground"}`}>
+                            {timeLeft}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleCopy}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 font-semibold text-xs focus:outline-none active:scale-95 cursor-pointer ${
+                          copied 
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 shadow-sm shadow-emerald-500/5" 
+                          : "bg-brand-gradient text-white hover:opacity-90 shadow-md shadow-violet-500/15"
+                        }`}
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>{t("copied")}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>{t("copyCode")}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Divider privacy footer */}
+            <div className="mt-8 pt-6 relative">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/20 dark:via-white/5 to-transparent"></div>
+              <p className="text-xs text-muted-foreground flex items-center justify-center bg-white/40 dark:bg-[#0a1128]/30 border border-white/10 dark:border-white/5 py-2.5 rounded-xl w-full font-medium">
+                <ShieldCheck className="w-4 h-4 mr-1.5 text-violet-500 dark:text-violet-400/80" />
+                {t("privacyNotice")}
+              </p>
+            </div>
           </div>
         </div>
       </div>

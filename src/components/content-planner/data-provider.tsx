@@ -63,6 +63,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       if (!cancelled) setMeId(user.id);
+      
+      // Run background cleanup for data older than 30 days
+      fetch("/api/content-planner/cleanup", { method: "POST" }).catch(console.error);
 
       const [tasksRes, profilesRes, productsRes, platformsRes, commentsRes, activityRes] =
         await Promise.all([
@@ -93,12 +96,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // ---------------- Realtime subscriptions ----------------
   React.useEffect(() => {
+    if (!meId) return;
+
     const channel = supabase
       .channel("content-planner")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "content_tasks" },
         (payload) => {
+          console.log("[Realtime] content_tasks:", payload.eventType, (payload.new as any)?.id || (payload.old as any)?.id);
           setTasks((prev) => {
             if (payload.eventType === "INSERT") {
               const row = payload.new as ContentTask;
@@ -121,6 +127,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         "postgres_changes",
         { event: "*", schema: "public", table: "comments" },
         (payload) => {
+          console.log("[Realtime] comments:", payload.eventType, (payload.new as any)?.id || (payload.old as any)?.id);
           setComments((prev) => {
             if (payload.eventType === "INSERT") {
               const row = payload.new as Comment;
@@ -169,11 +176,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           });
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log("[Realtime] Subscription status:", status, err);
+      });
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [supabase, meId]);
 
   const me = React.useMemo(
     () => profiles.find((p) => p.id === meId) ?? null,
@@ -262,19 +271,35 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTask = React.useCallback<DataContextValue["deleteTask"]>(
     async (id) => {
-      const { error } = await supabase.from("content_tasks").delete().eq("id", id);
-      if (error) throw error;
+      // Use server-side API route with Service Role Key to bypass RLS
+      const res = await fetch("/api/content-planner/delete-task", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        throw new Error(body.error ?? "ลบไม่สำเร็จ");
+      }
+      // Immediately remove from local state for instant UI feedback
+      setTasks((prev) => prev.filter((t) => t.id !== id));
     },
-    [supabase]
+    []
   );
 
   const addComment = React.useCallback<DataContextValue["addComment"]>(
     async (taskId, text) => {
       if (!meId || !text.trim()) return;
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("comments")
-        .insert({ task_id: taskId, user_id: meId, comment: text.trim() });
+        .insert({ task_id: taskId, user_id: meId, comment: text.trim() })
+        .select()
+        .single();
       if (error) throw error;
+      setComments((prev) => {
+        if (prev.some((c) => c.id === data.id)) return prev;
+        return [...prev, data as Comment];
+      });
       logActivity(taskId, "comment_added", null, { preview: text.slice(0, 80) });
     },
     [supabase, meId, logActivity]
@@ -296,7 +321,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = React.useCallback(async () => {
     await supabase.auth.signOut();
-    window.location.href = "/content-planner/login";
+    const isEn = window.location.pathname.startsWith("/en");
+    window.location.href = isEn ? "/en/content-planner/login" : "/content-planner/login";
   }, [supabase]);
 
   const value: DataContextValue = {

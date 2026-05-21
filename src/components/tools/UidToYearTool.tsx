@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Copy, Trash2, Check, Calendar, Info } from "lucide-react";
+import { Copy, Trash2, Check, Calendar, Info, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 // Facebook UID ranges based on known data
@@ -126,92 +126,118 @@ export default function UidToYearTool() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="container mx-auto px-4 py-8 select-none max-w-5xl space-y-6">
+      {/* Title */}
       <div>
-        <h2 className="text-2xl font-bold mb-2 flex items-center">
-          <Calendar className="w-6 h-6 mr-2 text-primary" />
+        <h2 className="text-3xl font-extrabold flex items-center mb-2 bg-clip-text text-transparent bg-brand-gradient dark:from-white dark:to-slate-300">
+          <Calendar className="w-8 h-8 mr-3 text-violet-500 dark:text-violet-400 animate-pulse-soft" />
           {t("title")}
         </h2>
-        <p className="text-muted-foreground text-sm">
-          {t("desc")}
-        </p>
+        <p className="text-muted-foreground text-sm">{t("desc")}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2 items-center">
-        <button onClick={processUids} className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
-          🔍 {t("analyzeBtn")}
+      {/* Control Row */}
+      <div className="flex flex-wrap gap-4 items-center justify-between bg-white/40 dark:bg-[#0a1128]/45 p-4 rounded-2xl border border-white/10 dark:border-white/5 shadow-sm">
+        <span className="text-xs font-bold text-muted-foreground pl-1">
+          {input.split('\n').filter(line => line.trim() !== '').length} UIDs detected
+        </span>
+        <button
+          onClick={processUids}
+          className="flex items-center bg-brand-gradient text-white hover:opacity-90 px-6 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-md shadow-violet-500/15 h-9 cursor-pointer ml-auto"
+        >
+          <Sparkles className="w-4 h-4 mr-2" /> {t("analyzeBtn")}
         </button>
       </div>
 
       {/* Stats Summary */}
       {Object.keys(stats).length > 0 && (
-        <div className="bg-muted/30 border border-border rounded-lg p-4">
-          <p className="text-sm font-medium mb-2">📊 {t("statsSummary")}</p>
+        <div className="bg-white/40 dark:bg-[#0a1128]/45 border border-white/10 dark:border-white/5 rounded-2xl p-5 shadow-sm space-y-3">
+          <p className="text-xs font-extrabold text-foreground/80 flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+            {t("statsSummary")}
+          </p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(stats).sort().map(([year, count]) => (
-              <span key={year} className="bg-background border border-border px-3 py-1 rounded-full text-xs font-medium">
-                {year}: <strong className="text-primary">{count}</strong>
+              <span
+                key={year}
+                className="bg-white/60 dark:bg-[#131a30]/60 border border-white/20 dark:border-white/5 px-3.5 py-1.5 rounded-full text-[11px] font-bold text-muted-foreground shadow-sm flex items-center space-x-1.5 transition-all hover:scale-105"
+              >
+                <span>{year}:</span>
+                <span className="text-transparent bg-clip-text bg-brand-gradient dark:from-violet-400 dark:to-fuchsia-400 font-extrabold">{count}</span>
               </span>
             ))}
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">{t("input")}</label>
-            <button
-              onClick={() => { setInput(""); setStats({}); }}
-              className="text-xs flex items-center text-muted-foreground hover:text-destructive transition-colors"
-            >
-              <Trash2 className="w-3 h-3 mr-1" /> {t("clear")}
-            </button>
-          </div>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="w-full h-96 p-3 rounded-lg border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-mono resize-none"
-            placeholder={t("placeholder")}
-          />
-        </div>
+      {/* Editor Panel Card */}
+      <div className="relative group/panel transition-all duration-300">
+        <div className="absolute inset-0 bg-brand-gradient opacity-5 dark:opacity-10 blur-2xl rounded-3xl scale-[1.01] pointer-events-none" />
+        <div className="absolute inset-0 bg-brand-gradient opacity-15 dark:opacity-25 rounded-3xl p-[1px] pointer-events-none" />
+        <div className="relative bg-white/70 dark:bg-[#131a30]/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-2xl rounded-3xl p-6 overflow-hidden">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Input Box */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between px-1">
+                <label className="text-xs font-extrabold text-foreground">{t("input")}</label>
+                <button
+                  onClick={() => { setInput(""); setStats({}); }}
+                  className="text-[11px] font-bold flex items-center text-muted-foreground/80 hover:text-rose-500 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5 mr-1" /> {t("clear")}
+                </button>
+              </div>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="w-full h-96 p-4 bg-white/40 dark:bg-[#0a1128]/45 border border-border/80 dark:border-white/10 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10 transition-all rounded-2xl text-foreground font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-muted-foreground/30"
+                placeholder={t("placeholder")}
+              />
+            </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium">{t("output")}</label>
-            <div className="flex space-x-2">
-              <button
-                onClick={copyToClipboard}
-                disabled={!output}
-                className="text-xs flex items-center text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
-              >
-                {copied ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
-                {copied ? t("copied") : t("copy")}
-              </button>
-              <button
-                onClick={() => setOutput("")}
-                className="text-xs flex items-center text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <Trash2 className="w-3 h-3 mr-1" /> {t("clear")}
-              </button>
+            {/* Output Box */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between px-1">
+                <label className="text-xs font-extrabold text-foreground">{t("output")}</label>
+                <div className="flex space-x-3.5">
+                  <button
+                    onClick={copyToClipboard}
+                    disabled={!output}
+                    className={`text-[11px] font-bold flex items-center transition-colors disabled:opacity-40 disabled:pointer-events-none cursor-pointer ${
+                      copied ? "text-emerald-500 hover:text-emerald-600" : "text-violet-500 hover:text-violet-600"
+                    }`}
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                    {copied ? t("copied") : t("copy")}
+                  </button>
+                  <button
+                    onClick={() => setOutput("")}
+                    className="text-[11px] font-bold flex items-center text-muted-foreground/80 hover:text-rose-500 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> {t("clear")}
+                  </button>
+                </div>
+              </div>
+              <textarea
+                value={output}
+                readOnly
+                className="w-full h-96 p-4 bg-violet-500/5 dark:bg-[#0a1128]/25 border border-border/80 dark:border-white/10 rounded-2xl text-foreground font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-muted-foreground/20"
+                placeholder={t("output")}
+              />
             </div>
           </div>
-          <textarea
-            value={output}
-            readOnly
-            className="w-full h-96 p-3 rounded-lg border border-input bg-muted/30 focus:outline-none text-sm font-mono resize-none"
-            placeholder={t("output")}
-          />
         </div>
       </div>
 
       {/* Info box */}
-      <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 text-sm text-amber-700 dark:text-amber-300">
-        <div className="flex items-start space-x-2">
-          <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-medium mb-1">{t("note")}</p>
-            <p className="text-xs opacity-80">
+      <div className="relative group/info overflow-hidden">
+        <div className="absolute inset-0 bg-amber-500/5 dark:bg-amber-500/10 backdrop-blur-md rounded-2xl pointer-events-none" />
+        <div className="relative p-5 border border-amber-500/20 rounded-2xl text-amber-700 dark:text-amber-300 flex items-start gap-3.5 shadow-sm">
+          <Info className="w-5 h-5 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+          <div className="space-y-1">
+            <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">{t("note")}</h4>
+            <p className="text-xs leading-relaxed opacity-85 font-medium">
               {t("noteDesc")}
             </p>
           </div>

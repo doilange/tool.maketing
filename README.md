@@ -1,6 +1,6 @@
-# 🛡️ 2FA Tools - Secure & Private Multi-Tool Platform
+# 🗓️ MT Content Planner - Content & Marketing Management Platform
 
-![2FA Tools Banner](public/logo.png)
+![MT Content Planner Banner](public/logo.png)
 
 แพลตฟอร์มรวบรวมเครื่องมืออเนกประสงค์แบบ Self-hosted ที่สร้างขึ้นด้วย **Next.js 16 (App Router)** และ **Tailwind CSS** ออกแบบมาสำหรับนักการตลาดดิจิทัล นักพัฒนา และผู้ที่ใส่ใจเรื่องความเป็นส่วนตัว โดยแพลตฟอร์มนี้ให้บริการเครื่องมือต่างๆ มากมายโดยไม่มีโฆษณา ไม่มีการติดตามผู้ใช้ และลดการประมวลผลบนเซิร์ฟเวอร์ที่ไม่จำเป็น
 
@@ -51,8 +51,8 @@
 
 1.  **ดาวน์โหลดโปรเจกต์ (Clone repository)**
     ```bash
-    git clone https://github.com/pakawatdmc-art/tool.maketing.git
-    cd tool.maketing
+    git clone https://github.com/pakawatdmc-art/mt-content-planner.git
+    cd mt-content-planner
     ```
 
 2.  **ติดตั้ง Dependencies**
@@ -98,7 +98,7 @@
 
 ## 🤝 การมีส่วนร่วม (Contributing)
 
-ยินดีต้อนรับทุกท่านที่ต้องการร่วมพัฒนา แจ้งปัญหา (Issues) หรือเสนอแนะฟีเจอร์ใหม่ๆ! สามารถเข้าไปพูดคุยกันได้ที่ [หน้า Issues](https://github.com/pakawatdmc-art/tool.maketing/issues)
+ยินดีต้อนรับทุกท่านที่ต้องการร่วมพัฒนา แจ้งปัญหา (Issues) หรือเสนอแนะฟีเจอร์ใหม่ๆ! สามารถเข้าไปพูดคุยกันได้ที่ [หน้า Issues](https://github.com/pakawatdmc-art/mt-content-planner/issues)
 
 ## 📄 ลิขสิทธิ์ (License)
 

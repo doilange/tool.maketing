@@ -31,8 +31,8 @@ export default function ToolSidebar({ activeTab, onTabChange }: SidebarProps) {
   const t = useTranslations("Sidebar");
   
   return (
-    <div className="w-full md:w-64 flex-shrink-0 border-r border-border/40 bg-card">
-      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-y-auto p-4 space-y-1 scrollbar-thin scrollbar-thumb-muted">
+    <div className="w-full md:w-64 flex-shrink-0 border-r border-white/20 dark:border-white/5 bg-white/45 dark:bg-[#131a30]/45 backdrop-blur-xl z-20">
+      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-y-auto p-4 space-y-1.5 scrollbar-thin scrollbar-thumb-muted">
         {TOOLS_LIST.map((tool) => {
           const Icon = tool.icon;
           const isActive = activeTab === tool.id;
@@ -41,13 +41,13 @@ export default function ToolSidebar({ activeTab, onTabChange }: SidebarProps) {
             <button
               key={tool.id}
               onClick={() => onTabChange(tool.id)}
-              className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer active:scale-95 ${
                 isActive 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
-                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                  ? "bg-brand-gradient text-white shadow-md shadow-violet-500/15 scale-[1.01]" 
+                  : "text-muted-foreground/80 hover:bg-white/60 dark:hover:bg-[#1c2541]/60 hover:text-foreground hover:translate-x-1"
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? "" : "text-primary/70"}`} />
+              <Icon className={`w-4.5 h-4.5 transition-colors ${isActive ? "text-white animate-pulse-soft" : "text-violet-500/70 dark:text-violet-400/60"}`} />
               <span className="truncate">{t(tool.id)}</span>
             </button>
           );

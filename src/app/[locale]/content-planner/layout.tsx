@@ -4,7 +4,7 @@ import { DataProvider, useData } from "@/components/content-planner/data-provide
 import { LanguageProvider } from "@/lib/content-planner/i18n";
 import { Sidebar } from "@/components/content-planner/sidebar";
 import { Topbar } from "@/components/content-planner/topbar";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import * as React from "react";
 
 function Inner({ children }: { children: React.ReactNode }) {
@@ -12,8 +12,8 @@ function Inner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Check if we're on the login page
-  const isLoginPage = pathname?.replace(/^\/(en|th)/, "").startsWith("/content-planner/login");
+  // next-intl's usePathname returns the path without locale prefix
+  const isLoginPage = pathname?.startsWith("/content-planner/login");
 
   React.useEffect(() => {
     if (!loading && !me && !isLoginPage) {
@@ -29,30 +29,27 @@ function Inner({ children }: { children: React.ReactNode }) {
   // Still loading auth — show nothing (prevents flash of dashboard content)
   if (loading || !me) {
     return (
-      <div className="min-h-screen flex items-center justify-center planner-theme"
-        style={{
-          background: `
-            radial-gradient(1100px 600px at 0% 0%, #e9d5ff 0%, transparent 60%),
-            radial-gradient(900px 500px at 100% 0%, #fbcfe8 0%, transparent 55%),
-            radial-gradient(900px 500px at 100% 100%, #fed7aa 0%, transparent 55%),
-            radial-gradient(700px 400px at 0% 100%, #bfdbfe 0%, transparent 55%),
-            linear-gradient(180deg, #fbf7ff 0%, #ffffff 100%)
-          `,
-        }}
-      >
-        <div className="text-sm text-slate-400 animate-pulse">Loading…</div>
+      <div className="min-h-screen flex items-center justify-center planner-theme">
+        <div className="text-sm text-muted-foreground animate-pulse">Loading…</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex planner-theme">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col">
-        <Topbar />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto">
-          {children}
-        </main>
+    <div className="relative min-h-screen flex planner-theme overflow-hidden select-none">
+      {/* Slow-floating background glow backlights */}
+      <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] rounded-full bg-violet-400/10 dark:bg-violet-500/5 blur-[80px] pointer-events-none animate-float-slow z-0" />
+      <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] rounded-full bg-pink-400/10 dark:bg-pink-500/5 blur-[90px] pointer-events-none animate-float-delayed z-0" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full bg-blue-300/10 dark:bg-blue-600/3 blur-[100px] pointer-events-none animate-pulse-soft z-0" />
+
+      <div className="relative flex w-full min-h-screen z-10">
+        <Sidebar />
+        <div className="flex-1 min-w-0 flex flex-col">
+          <Topbar />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1500px] w-full mx-auto relative">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

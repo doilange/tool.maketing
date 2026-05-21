@@ -144,7 +144,7 @@
   },
   "FAQ": {
     "title": "Frequently Asked Questions",
-    "description": "Everything you need to know about how the 2FA Tools platform works, security measures, and privacy policies.",
+    "description": "Everything you need to know about how the MT Content Planner platform works, security measures, and privacy policies.",
     "footer": "Still have questions? The source code is open for inspection.",
     "security": "Security & Privacy",
     "q1": "Are my 2FA secret keys sent to the server?",
