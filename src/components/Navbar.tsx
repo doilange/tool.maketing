@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Moon, Sun, Menu, X, Languages } from "lucide-react";
+import { Moon, Sun, Menu, X, Languages, LayoutDashboard, Wrench, Link2, Globe, Search, Download, FileText, HelpCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
@@ -27,7 +27,16 @@ export function Navbar() {
     setMounted(true);
   }, []);
 
-  const navItems: any[] = [];
+  const navItems = [
+    { href: "/content-planner", name: t("contentPlanner"), icon: LayoutDashboard },
+    { href: "/tool", name: t("tool"), icon: Wrench },
+    { href: "/link-converter", name: t("linkConverter"), icon: Link2 },
+    { href: "/check-ip", name: t("checkIp"), icon: Globe },
+    { href: "/check-uid", name: t("checkUid"), icon: Search },
+    { href: "/get-uid", name: t("getUid"), icon: Download },
+    { href: "/notepad", name: t("notepad"), icon: FileText },
+    { href: "/faq", name: t("faq"), icon: HelpCircle },
+  ];
 
   // Helper to check if a path is active
   const isActivePath = (itemHref: string) => {
