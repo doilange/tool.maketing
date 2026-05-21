@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import { getDb } from '@/lib/db';
+import { insertShortLink } from '@/lib/short-links';
 
 export async function POST(request: Request) {
   try {
@@ -25,15 +25,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid URL provided' }, { status: 400 });
     }
 
-    const db = getDb();
     const id = nanoid(6);
+    const result = await insertShortLink(id, validUrl.href);
 
-    try {
-      const stmt = db.prepare('INSERT INTO short_links (id, original_url, created_at) VALUES (?, ?, ?)');
-      stmt.run(id, validUrl.href, Math.floor(Date.now() / 1000));
-    } catch (dbError) {
-      console.error('SQLite error inserting short link:', dbError);
-      return NextResponse.json({ error: 'Failed to create short link' }, { status: 500 });
+    if (!result.success) {
+      return NextResponse.json({ error: result.error || 'Failed to create short link' }, { status: 500 });
     }
 
     return NextResponse.json({ id, shortUrl: `/s/${id}` });

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { getShortLink } from '@/lib/short-links';
 
 export async function GET(
   request: Request,
@@ -11,15 +11,13 @@ export async function GET(
     return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
   }
 
-  const db = getDb();
+  const originalUrl = await getShortLink(id);
 
-  const row = db.prepare('SELECT original_url FROM short_links WHERE id = ?').get(id) as { original_url: string } | undefined;
-
-  if (!row?.original_url) {
+  if (!originalUrl) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  const validUrl = new URL(row.original_url);
+  const validUrl = new URL(originalUrl);
 
   const html = `<!DOCTYPE html>
 <html>
