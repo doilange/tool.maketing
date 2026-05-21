@@ -4,21 +4,22 @@ import { useState } from "react";
 import { Link2, Copy, Check, ExternalLink, ArrowRight, Shield, Zap, Globe, Scissors } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type Mode = "bypass" | "shorten";
-
 export default function LinkConverterPage() {
   const t = useTranslations("LinkConverter");
-  const [mode, setMode] = useState<Mode>("bypass");
   const [inputUrl, setInputUrl] = useState("");
-  const [convertedUrl, setConvertedUrl] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [shortUrl, setShortUrl] = useState("");
+  const [bypassUrl, setBypassUrl] = useState("");
+  const [copiedShort, setCopiedShort] = useState(false);
+  const [copiedBypass, setCopiedBypass] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleConvert = async () => {
     setError("");
-    setCopied(false);
-    setConvertedUrl("");
+    setCopiedShort(false);
+    setCopiedBypass(false);
+    setShortUrl("");
+    setBypassUrl("");
 
     const trimmed = inputUrl.trim();
     if (!trimmed) {
@@ -40,49 +41,50 @@ export default function LinkConverterPage() {
       return;
     }
 
-    if (mode === "bypass") {
-      const baseUrl = window.location.origin;
-      const result = `${baseUrl}/api/r?url=${encodeURIComponent(url)}`;
-      setConvertedUrl(result);
-    } else {
-      // Shorten mode — call the API
-      setLoading(true);
-      try {
-        const res = await fetch("/api/shorten", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.error || "Failed to shorten URL");
-          return;
-        }
-        const baseUrl = window.location.origin;
-        setConvertedUrl(`${baseUrl}${data.shortUrl}`);
-      } catch {
-        setError("Network error. Please try again.");
-      } finally {
-        setLoading(false);
+    const baseUrl = window.location.origin;
+
+    // 1. Generate bypass URL immediately
+    const bypass = `${baseUrl}/api/r?url=${encodeURIComponent(url)}`;
+    setBypassUrl(bypass);
+
+    // 2. Try to shorten automatically
+    setLoading(true);
+    try {
+      const res = await fetch("/api/shorten", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+      if (res.ok && data.shortUrl) {
+        setShortUrl(`${baseUrl}${data.shortUrl}`);
       }
+      // If shorten fails, we still have the bypass URL — no error needed
+    } catch {
+      // Network error — bypass URL is still available
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (text: string, type: "short" | "bypass") => {
     try {
-      await navigator.clipboard.writeText(convertedUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      await navigator.clipboard.writeText(text);
     } catch {
-      // fallback
       const input = document.createElement("input");
-      input.value = convertedUrl;
+      input.value = text;
       document.body.appendChild(input);
       input.select();
       document.execCommand("copy");
       document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+    }
+
+    if (type === "short") {
+      setCopiedShort(true);
+      setTimeout(() => setCopiedShort(false), 2500);
+    } else {
+      setCopiedBypass(true);
+      setTimeout(() => setCopiedBypass(false), 2500);
     }
   };
 
@@ -92,55 +94,16 @@ export default function LinkConverterPage() {
     }
   };
 
-  const switchMode = (newMode: Mode) => {
-    if (newMode !== mode) {
-      setMode(newMode);
-      setConvertedUrl("");
-      setError("");
-      setCopied(false);
-    }
-  };
+  const hasResult = bypassUrl || shortUrl;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <div className="mb-8 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white mb-4 shadow-lg">
-          {mode === "bypass" ? <Link2 className="w-8 h-8" /> : <Scissors className="w-8 h-8" />}
+          <Link2 className="w-8 h-8" />
         </div>
-        <h1 className="text-3xl font-bold mb-2">
-          {mode === "bypass" ? t("title") : t("shortenTitle")}
-        </h1>
-        <p className="text-muted-foreground max-w-lg mx-auto">
-          {mode === "bypass" ? t("description") : t("shortenDesc")}
-        </p>
-      </div>
-
-      {/* Mode Toggle */}
-      <div className="flex justify-center mb-6">
-        <div className="inline-flex bg-muted rounded-xl p-1 gap-1">
-          <button
-            onClick={() => switchMode("bypass")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              mode === "bypass"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Link2 className="w-4 h-4" />
-            {t("modeBypass")}
-          </button>
-          <button
-            onClick={() => switchMode("shorten")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              mode === "shorten"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <Scissors className="w-4 h-4" />
-            {t("modeShorten")}
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
+        <p className="text-muted-foreground max-w-lg mx-auto">{t("description")}</p>
       </div>
 
       {/* Converter Box */}
@@ -165,7 +128,7 @@ export default function LinkConverterPage() {
             ) : (
               <ArrowRight className="w-4 h-4 mr-2" />
             )}
-            {mode === "bypass" ? t("convertBtn") : t("shortenBtn")}
+            {t("convertBtn")}
           </button>
         </div>
 
@@ -173,33 +136,71 @@ export default function LinkConverterPage() {
           <p className="text-destructive text-sm mt-2">{error}</p>
         )}
 
-        {/* Result */}
-        {convertedUrl && (
-          <div className="mt-5 space-y-3">
-            <label className="text-sm font-medium block">
-              {mode === "bypass" ? t("resultLabel") : t("shortenResultLabel")}
-            </label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                value={convertedUrl}
-                readOnly
-                className="flex-grow bg-muted/50 border border-border rounded-lg px-4 py-3 text-sm font-mono select-all w-full"
-              />
-              <button
-                onClick={handleCopy}
-                className={`flex items-center justify-center px-4 py-3 rounded-lg font-medium transition-all shrink-0 w-full sm:w-auto ${
-                  copied
-                    ? "bg-green-500 text-white"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border"
-                }`}
-              >
-                {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-                {copied ? t("copied") : t("copyBtn")}
-              </button>
-            </div>
+        {/* Results */}
+        {hasResult && (
+          <div className="mt-5 space-y-4">
+
+            {/* Short URL (primary result) */}
+            {shortUrl && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Scissors className="w-4 h-4 text-purple-500" />
+                  {t("shortenResultLabel")}
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={shortUrl}
+                    readOnly
+                    className="flex-grow bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 rounded-lg px-4 py-3 text-sm font-mono select-all w-full"
+                  />
+                  <button
+                    onClick={() => handleCopy(shortUrl, "short")}
+                    className={`flex items-center justify-center px-4 py-3 rounded-lg font-medium transition-all shrink-0 w-full sm:w-auto ${
+                      copiedShort
+                        ? "bg-green-500 text-white"
+                        : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                    }`}
+                  >
+                    {copiedShort ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                    {copiedShort ? t("copied") : t("copyBtn")}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Bypass URL (secondary / fallback) */}
+            {bypassUrl && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
+                  <Link2 className="w-4 h-4" />
+                  {t("resultLabel")}
+                  {shortUrl && <span className="text-xs bg-muted px-2 py-0.5 rounded-full">Fallback</span>}
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={bypassUrl}
+                    readOnly
+                    className="flex-grow bg-muted/50 border border-border rounded-lg px-4 py-3 text-sm font-mono select-all w-full"
+                  />
+                  <button
+                    onClick={() => handleCopy(bypassUrl, "bypass")}
+                    className={`flex items-center justify-center px-4 py-3 rounded-lg font-medium transition-all shrink-0 w-full sm:w-auto ${
+                      copiedBypass
+                        ? "bg-green-500 text-white"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border"
+                    }`}
+                  >
+                    {copiedBypass ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                    {copiedBypass ? t("copied") : t("copyBtn")}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <a
-              href={convertedUrl}
+              href={shortUrl || bypassUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center text-xs text-muted-foreground hover:text-primary transition-colors"
