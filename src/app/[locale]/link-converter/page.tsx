@@ -1,19 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Link2, Copy, Check, ExternalLink, ArrowRight, Shield, Zap, Globe } from "lucide-react";
+import { Link2, Copy, Check, ExternalLink, ArrowRight, Shield, Zap, Globe, Scissors } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+type Mode = "bypass" | "shorten";
 
 export default function LinkConverterPage() {
   const t = useTranslations("LinkConverter");
+  const [mode, setMode] = useState<Mode>("bypass");
   const [inputUrl, setInputUrl] = useState("");
   const [convertedUrl, setConvertedUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleConvert = () => {
+  const handleConvert = async () => {
     setError("");
     setCopied(false);
+    setConvertedUrl("");
 
     const trimmed = inputUrl.trim();
     if (!trimmed) {
@@ -35,9 +40,32 @@ export default function LinkConverterPage() {
       return;
     }
 
-    const baseUrl = window.location.origin;
-    const result = `${baseUrl}/api/r?url=${encodeURIComponent(url)}`;
-    setConvertedUrl(result);
+    if (mode === "bypass") {
+      const baseUrl = window.location.origin;
+      const result = `${baseUrl}/api/r?url=${encodeURIComponent(url)}`;
+      setConvertedUrl(result);
+    } else {
+      // Shorten mode — call the API
+      setLoading(true);
+      try {
+        const res = await fetch("/api/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || "Failed to shorten URL");
+          return;
+        }
+        const baseUrl = window.location.origin;
+        setConvertedUrl(`${baseUrl}${data.shortUrl}`);
+      } catch {
+        setError("Network error. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleCopy = async () => {
@@ -64,14 +92,55 @@ export default function LinkConverterPage() {
     }
   };
 
+  const switchMode = (newMode: Mode) => {
+    if (newMode !== mode) {
+      setMode(newMode);
+      setConvertedUrl("");
+      setError("");
+      setCopied(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <div className="mb-8 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white mb-4 shadow-lg">
-          <Link2 className="w-8 h-8" />
+          {mode === "bypass" ? <Link2 className="w-8 h-8" /> : <Scissors className="w-8 h-8" />}
         </div>
-        <h1 className="text-3xl font-bold mb-2">{t("title")}</h1>
-        <p className="text-muted-foreground max-w-lg mx-auto">{t("description")}</p>
+        <h1 className="text-3xl font-bold mb-2">
+          {mode === "bypass" ? t("title") : t("shortenTitle")}
+        </h1>
+        <p className="text-muted-foreground max-w-lg mx-auto">
+          {mode === "bypass" ? t("description") : t("shortenDesc")}
+        </p>
+      </div>
+
+      {/* Mode Toggle */}
+      <div className="flex justify-center mb-6">
+        <div className="inline-flex bg-muted rounded-xl p-1 gap-1">
+          <button
+            onClick={() => switchMode("bypass")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              mode === "bypass"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Link2 className="w-4 h-4" />
+            {t("modeBypass")}
+          </button>
+          <button
+            onClick={() => switchMode("shorten")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              mode === "shorten"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Scissors className="w-4 h-4" />
+            {t("modeShorten")}
+          </button>
+        </div>
       </div>
 
       {/* Converter Box */}
@@ -88,10 +157,15 @@ export default function LinkConverterPage() {
           />
           <button
             onClick={handleConvert}
-            className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 px-6 py-3 rounded-lg font-medium transition-all shadow-sm hover:shadow-md shrink-0 w-full sm:w-auto"
+            disabled={loading}
+            className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 px-6 py-3 rounded-lg font-medium transition-all shadow-sm hover:shadow-md shrink-0 w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <ArrowRight className="w-4 h-4 mr-2" />
-            {t("convertBtn")}
+            {loading ? (
+              <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin mr-2" />
+            ) : (
+              <ArrowRight className="w-4 h-4 mr-2" />
+            )}
+            {mode === "bypass" ? t("convertBtn") : t("shortenBtn")}
           </button>
         </div>
 
@@ -102,7 +176,9 @@ export default function LinkConverterPage() {
         {/* Result */}
         {convertedUrl && (
           <div className="mt-5 space-y-3">
-            <label className="text-sm font-medium block">{t("resultLabel")}</label>
+            <label className="text-sm font-medium block">
+              {mode === "bypass" ? t("resultLabel") : t("shortenResultLabel")}
+            </label>
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"

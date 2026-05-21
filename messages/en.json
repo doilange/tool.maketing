@@ -349,6 +349,12 @@
     "feature2Title": "Instant Redirect",
     "feature2Desc": "Fast redirect with no delays or waiting",
     "feature3Title": "Works Everywhere",
-    "feature3Desc": "Compatible with Facebook, LINE, Discord and more"
+    "feature3Desc": "Compatible with Facebook, LINE, Discord and more",
+    "modeBypass": "Bypass Link",
+    "modeShorten": "Shorten Link",
+    "shortenTitle": "URL Shortener",
+    "shortenDesc": "Shorten your long links. Includes built-in social media block bypass.",
+    "shortenBtn": "Shorten URL",
+    "shortenResultLabel": "Shortened Link"
   }
 }

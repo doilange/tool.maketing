@@ -349,6 +349,12 @@
     "feature2Title": "ส่งต่อทันที",
     "feature2Desc": "ส่งต่อลิงก์อย่างรวดเร็ว ไม่มีสะดุดหรือต้องรอ",
     "feature3Title": "ใช้งานได้ทุกที่",
-    "feature3Desc": "รองรับทั้ง Facebook, LINE, Discord และอื่นๆ"
+    "feature3Desc": "รองรับทั้ง Facebook, LINE, Discord และอื่นๆ",
+    "modeBypass": "แปลงข้ามบล็อก",
+    "modeShorten": "ย่อลิงก์",
+    "shortenTitle": "ตัวย่อลิงก์",
+    "shortenDesc": "ย่อลิงก์ยาวๆ ของคุณให้สั้นลง พร้อมระบบข้ามการบล็อกจากโซเชียลมีเดียในตัว",
+    "shortenBtn": "ย่อลิงก์",
+    "shortenResultLabel": "ลิงก์ที่ย่อแล้ว"
   }
 }
