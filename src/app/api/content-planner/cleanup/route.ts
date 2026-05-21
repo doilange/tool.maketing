@@ -3,9 +3,14 @@ import { createClient } from "@supabase/supabase-js";
 
 export async function POST() {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.warn("Skipping cleanup: SUPABASE_SERVICE_ROLE_KEY is not set.");
+      return NextResponse.json({ success: true, message: "Skipped cleanup (no admin key)" });
+    }
+
     // Use service role to bypass RLS for cleanup
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {

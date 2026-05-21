@@ -63,9 +63,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       if (!cancelled) setMeId(user.id);
-      
-      // Run background cleanup for data older than 30 days
-      fetch("/api/content-planner/cleanup", { method: "POST" }).catch(console.error);
 
       const [tasksRes, profilesRes, productsRes, platformsRes, commentsRes, activityRes] =
         await Promise.all([
