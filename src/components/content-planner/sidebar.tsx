@@ -1,10 +1,10 @@
 "use client";
-import { Link } from "@/i18n/navigation";
-import Image from "next/image";
+import { Link, useRouter } from "@/i18n/navigation";
 import { usePathname } from "@/i18n/navigation";
 import { LayoutDashboard, Table, Calendar } from "lucide-react";
 import { cn } from "@/lib/content-planner/utils";
 import { useT } from "@/lib/content-planner/i18n";
+import * as React from "react";
 
 const links = [
   { href: "/content-planner", key: "sidebar.dashboard", icon: LayoutDashboard, exact: true },
@@ -14,7 +14,10 @@ const links = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const t = useT();
+  const [isPending, startTransition] = React.useTransition();
+  const [pendingHref, setPendingHref] = React.useState<string | null>(null);
 
   const isActive = (href: string, exact: boolean) => {
     if (!pathname) return false;
@@ -22,6 +25,20 @@ export function Sidebar() {
     if (exact) return pathname === href;
     return pathname.startsWith(href);
   };
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    if (isActive(href, href === "/content-planner")) return;
+    setPendingHref(href);
+    startTransition(() => {
+      router.push(href);
+    });
+  };
+
+  // Clear pending state when navigation completes
+  React.useEffect(() => {
+    if (!isPending) setPendingHref(null);
+  }, [isPending]);
 
   return (
     <aside className="hidden md:flex md:flex-col w-60 shrink-0 border-r border-white/20 dark:border-white/5 bg-white/40 dark:bg-[#0a1128]/40 backdrop-blur-xl p-4 gap-2 shadow-xl z-20">
@@ -49,20 +66,27 @@ export function Sidebar() {
       <nav className="flex flex-col gap-1.5 mt-4">
         {links.map((l) => {
           const active = isActive(l.href, l.exact);
+          const pending = pendingHref === l.href;
+          const showActive = active || pending;
           const Icon = l.icon;
           return (
             <Link
               key={l.href}
               href={l.href}
+              prefetch={true}
+              onClick={(e) => handleNavClick(e, l.href)}
               className={cn(
                 "flex items-center gap-2.5 rounded-xl px-3 h-10 text-sm font-medium transition-all duration-200 border",
-                active
+                showActive
                   ? "bg-brand-gradient text-white shadow-lg shadow-violet-500/10 dark:shadow-violet-950/20 font-bold border-transparent"
                   : "text-muted-foreground border-transparent hover:bg-white/50 dark:hover:bg-[#1c2541]/40 hover:text-foreground hover:border-white/10 dark:hover:border-white/5"
               )}
             >
-              <Icon className={cn("h-4.5 w-4.5", active ? "text-white" : "text-violet-500 dark:text-violet-400")} />
+              <Icon className={cn("h-4.5 w-4.5", showActive ? "text-white" : "text-violet-500 dark:text-violet-400")} />
               {t(l.key)}
+              {pending && (
+                <span className="ml-auto h-3.5 w-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              )}
             </Link>
           );
         })}
