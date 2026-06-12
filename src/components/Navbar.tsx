@@ -11,12 +11,6 @@ export function Navbar() {
   const t = useTranslations("Navbar");
   const locale = useLocale();
   const pathname = usePathname();
-
-  // Hide global navbar on all Content Planner pages for an immersive, premium focused layout
-  if (pathname.includes("content-planner")) {
-    return null;
-  }
-
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -26,6 +20,11 @@ export function Navbar() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
+
+  // Hide the global navbar after all hooks have run so route changes keep hook order stable.
+  if (pathname.includes("content-planner")) {
+    return null;
+  }
 
   const navItems = [
     { href: "/content-planner", name: t("contentPlanner"), icon: LayoutDashboard },

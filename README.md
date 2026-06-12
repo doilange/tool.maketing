@@ -98,7 +98,13 @@
     ```bash
     npm run dev
     ```
-    เปิดเบราว์เซอร์และเข้าไปที่ [http://localhost:3000](http://localhost:3000) เพื่อดูผลลัพธ์
+    เปิดเบราว์เซอร์และเข้าไปที่ [http://localhost:3005](http://localhost:3005) เพื่อดูผลลัพธ์
+
+    ถ้าต้องการรัน API routes แยกพอร์ตสำหรับทดสอบ:
+    ```bash
+    npm run api
+    ```
+    API จะพร้อมใช้งานที่ [http://localhost:8005](http://localhost:8005)
 
 ### 🐳 Deploy ด้วย Docker
 
@@ -106,7 +112,7 @@
 docker compose up -d --build
 ```
 
-เว็บจะพร้อมใช้งานที่ [http://localhost:3000](http://localhost:3000)
+เว็บจะพร้อมใช้งานที่ [http://localhost:3005](http://localhost:3005)
 
 ## 🛠️ โครงสร้างของโปรเจกต์ (Project Structure)
 

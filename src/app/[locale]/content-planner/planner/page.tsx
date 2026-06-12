@@ -14,7 +14,7 @@ import {
   ProgressBadge,
 } from "@/components/content-planner/status-badge";
 import { formatDate, formatDateTime } from "@/lib/content-planner/utils";
-import { Download, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { downloadTasksCsv, downloadTasksCsvByMonth } from "@/lib/content-planner/export";
 import type { ContentTask } from "@/lib/content-planner/types";
 import { usePostOptions, useProgressOptions, useT } from "@/lib/content-planner/i18n";
@@ -26,7 +26,7 @@ export default function PlannerPage() {
   const postOptions = usePostOptions();
 
   const [search, setSearch] = React.useState("");
-  const [month, setMonth] = React.useState("");
+  const [month, setMonth] = React.useState(() => toMonthKey(new Date()));
   const [week, setWeek] = React.useState("");
   const [platform, setPlatform] = React.useState("");
   const [product, setProduct] = React.useState("");
@@ -38,22 +38,24 @@ export default function PlannerPage() {
   const [showCreate, setShowCreate] = React.useState(false);
   const [detail, setDetail] = React.useState<ContentTask | null>(null);
 
-  const months = React.useMemo(() => {
-    const set = new Set<string>();
-    tasks.forEach((task) => {
-      if (task.scheduled_date) set.add(task.scheduled_date.slice(0, 7));
-    });
-    return Array.from(set).sort();
-  }, [tasks]);
+  const monthTasks = React.useMemo(
+    () => tasks.filter((task) => task.scheduled_date?.startsWith(month)),
+    [tasks, month]
+  );
+
   const weeks = React.useMemo(() => {
     const set = new Set<string>();
-    tasks.forEach((task) => task.week_group && set.add(task.week_group));
+    monthTasks.forEach((task) => task.week_group && set.add(task.week_group));
     return Array.from(set).sort();
-  }, [tasks]);
+  }, [monthTasks]);
 
-  const filtered = tasks.filter((task) => {
+  const selectMonth = React.useCallback((nextMonth: string) => {
+    setMonth(nextMonth);
+    setWeek("");
+  }, []);
+
+  const filtered = React.useMemo(() => monthTasks.filter((task) => {
     if (search && !task.topic.toLowerCase().includes(search.toLowerCase())) return false;
-    if (month && (!task.scheduled_date || !task.scheduled_date.startsWith(month))) return false;
     if (week && task.week_group !== week) return false;
     if (platform && task.platform !== platform) return false;
     if (product && task.product !== product) return false;
@@ -61,7 +63,7 @@ export default function PlannerPage() {
     if (status && task.progress_status !== status) return false;
     if (postStatus && task.post_status !== postStatus) return false;
     return true;
-  });
+  }), [monthTasks, search, week, platform, product, owner, status, postStatus]);
 
   const canEdit = me?.role !== "viewer";
   const canDelete = me?.role !== "viewer";
@@ -78,20 +80,20 @@ export default function PlannerPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-brand-gradient flex items-center gap-2 select-none">
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 flex items-center gap-2 select-none">
             {t("planner.title")}
           </h1>
           <p className="text-sm text-muted-foreground">{t("planner.subtitle")}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <ExportMenu
             onExportDays={(days) => downloadTasksCsv(tasks, profiles, days)}
             onExportMonth={(m) => downloadTasksCsvByMonth(tasks, profiles, m)}
           />
           {canEdit && (
-            <Button onClick={() => setShowCreate(true)}>
+            <Button className="w-full sm:w-auto" onClick={() => setShowCreate(true)}>
               <Plus className="h-4 w-4" /> {t("planner.new_task")}
             </Button>
           )}
@@ -99,8 +101,8 @@ export default function PlannerPage() {
       </div>
 
       <Card>
-        <CardContent className="p-4 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2">
-          <div className="col-span-2 md:col-span-2 xl:col-span-2 relative">
+        <CardContent className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+          <div className="relative sm:col-span-2 xl:col-span-2">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               className="pl-7"
@@ -109,14 +111,44 @@ export default function PlannerPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Select value={month} onChange={(e) => setMonth(e.target.value)}>
-            <option value="">{t("planner.all_months")}</option>
-            {months.map((m) => (
-              <option key={m} value={m}>
-                {m}
-              </option>
-            ))}
-          </Select>
+          <div className="flex items-center gap-1 sm:col-span-2 xl:col-span-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 shrink-0"
+              onClick={() => selectMonth(shiftMonth(month, -1))}
+              aria-label={t("planner.previous_month")}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Input
+              type="month"
+              value={month}
+              onChange={(e) => selectMonth(e.target.value || toMonthKey(new Date()))}
+              aria-label={t("planner.select_month")}
+              className="min-w-[145px]"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-10 w-10 shrink-0"
+              onClick={() => selectMonth(shiftMonth(month, 1))}
+              aria-label={t("planner.next_month")}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="hidden sm:inline-flex shrink-0"
+              onClick={() => selectMonth(toMonthKey(new Date()))}
+            >
+              {t("planner.current_month")}
+            </Button>
+          </div>
           <Select value={week} onChange={(e) => setWeek(e.target.value)}>
             <option value="">{t("planner.all_weeks")}</option>
             {weeks.map((w) => (
@@ -168,10 +200,34 @@ export default function PlannerPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <div className="grid gap-3 md:hidden">
+        {filtered.length === 0 && (
+          <Card>
+            <CardContent className="py-8 text-center text-sm text-muted-foreground">
+              {t("planner.no_match")}
+            </CardContent>
+          </Card>
+        )}
+        {filtered.map((task) => (
+          <TaskMobileCard
+            key={task.id}
+            task={task}
+            product={products.find((p) => p.name === task.product)}
+            platform={platforms.find((p) => p.name === task.platform)}
+            ownerName={profiles.find((p) => p.id === task.owner_id)?.full_name ?? "—"}
+            canEdit={canEdit}
+            canDelete={canDelete && task.approval_status !== "approved"}
+            onOpen={() => setDetail(task)}
+            onEdit={() => setEditing(task)}
+            onDelete={() => remove(task.id)}
+          />
+        ))}
+      </div>
+
+      <Card className="hidden md:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-white/20 dark:bg-white/5 text-muted-foreground/90 select-none">
+          <table className="w-full min-w-[1280px] text-sm">
+            <thead className="bg-slate-50 text-muted-foreground/90 select-none dark:bg-white/5">
               <tr className="text-left">
                 <Th>{t("table.week")}</Th>
                 <Th>{t("table.date")}</Th>
@@ -208,7 +264,7 @@ export default function PlannerPage() {
                   <tr
                     key={task.id}
                     onClick={() => setDetail(task)}
-                    className="border-t border-white/10 dark:border-white/5 hover:bg-white/40 dark:hover:bg-white/5 transition-all cursor-pointer"
+                    className="border-t border-slate-100 hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5 transition-colors cursor-pointer"
                   >
                     <Td>{task.week_group ?? "—"}</Td>
                     <Td>{formatDate(task.scheduled_date)}</Td>
@@ -283,6 +339,79 @@ export default function PlannerPage() {
   );
 }
 
+function TaskMobileCard({
+  task,
+  product,
+  platform,
+  ownerName,
+  canEdit,
+  canDelete,
+  onOpen,
+  onEdit,
+  onDelete,
+}: {
+  task: ContentTask;
+  product?: { name: string; color: string } | null;
+  platform?: { name: string; color: string } | null;
+  ownerName: string;
+  canEdit: boolean;
+  canDelete: boolean;
+  onOpen: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const t = useT();
+
+  return (
+    <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#111827]">
+      <button type="button" onClick={onOpen} className="w-full text-left">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="font-semibold text-violet-700 dark:text-violet-300">
+                {formatDate(task.scheduled_date)}
+              </span>
+              <span>{task.post_time?.slice(0, 5) ?? "—"}</span>
+              {task.content_type && <span>• {task.content_type}</span>}
+            </div>
+            <h2 className="mt-2 line-clamp-2 text-base font-bold leading-snug text-slate-950 dark:text-slate-50">
+              {task.topic}
+            </h2>
+          </div>
+          <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 dark:bg-white/10 dark:text-slate-300">
+            {task.week_group ?? "—"}
+          </span>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {platform && <ColorTag name={platform.name} color={platform.color} />}
+          {product && <ColorTag name={product.name} color={product.color} />}
+          <ProgressBadge value={task.progress_status} />
+          <PostBadge value={task.post_status} />
+          <ApprovalBadge value={task.approval_status} />
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-xs text-muted-foreground dark:border-white/10">
+          <span>{t("table.day")}: <strong className="text-foreground">{task.day_name ?? "—"}</strong></span>
+          <span>{t("table.owner")}: <strong className="text-foreground">{ownerName}</strong></span>
+        </div>
+      </button>
+      {(canEdit || canDelete) && (
+        <div className="mt-3 flex items-center gap-2">
+          {canEdit && (
+            <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
+              <Pencil className="h-3.5 w-3.5" /> {t("common.edit")}
+            </Button>
+          )}
+          {canDelete && (
+            <Button variant="ghost" size="sm" className="flex-1 text-rose-600 hover:text-rose-700" onClick={onDelete}>
+              <Trash2 className="h-3.5 w-3.5" /> {t("common.delete")}
+            </Button>
+          )}
+        </div>
+      )}
+    </article>
+  );
+}
+
 function ExportMenu({
   onExportDays,
   onExportMonth,
@@ -311,8 +440,8 @@ function ExportMenu({
   ];
 
   return (
-    <div className="relative" ref={ref}>
-      <Button variant="outline" onClick={() => setOpen((o) => !o)}>
+    <div className="relative w-full sm:w-auto" ref={ref}>
+      <Button className="w-full sm:w-auto" variant="outline" onClick={() => setOpen((o) => !o)}>
         <Download className="h-4 w-4" /> {t("export.button")}
       </Button>
       {open && (
@@ -357,13 +486,23 @@ function ExportMenu({
   );
 }
 
+function toMonthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function shiftMonth(monthKey: string, offset: number) {
+  const [year, month] = monthKey.split("-").map(Number);
+  const date = new Date(year, month - 1 + offset, 1);
+  return toMonthKey(date);
+}
+
 function Th({ children }: { children?: React.ReactNode }) {
   return (
-    <th className="text-xs font-semibold uppercase tracking-wide px-3 py-2 whitespace-nowrap">
+    <th className="px-3 py-3 text-xs font-semibold uppercase tracking-wide whitespace-nowrap">
       {children}
     </th>
   );
 }
 function Td({ children, className = "" }: { children?: React.ReactNode; className?: string }) {
-  return <td className={`px-3 py-2 whitespace-nowrap ${className}`}>{children}</td>;
+  return <td className={`px-3 py-3 whitespace-nowrap ${className}`}>{children}</td>;
 }

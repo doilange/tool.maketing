@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack -p 3005",
+    "api": "node scripts/api-proxy.mjs",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3005",
+    "start:api": "node scripts/api-proxy.mjs",
     "lint": "eslint",
-    "reset-db": "node scripts/reset-db.js"
+    "reset-db": "node scripts/reset-db.js",
+    "content:metaverse": "node scripts/generate-metaverse-content.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

@@ -44,8 +44,9 @@ export async function POST() {
     }
 
     return NextResponse.json({ success: true, message: "Cleanup completed successfully" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Cleanup error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown cleanup error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

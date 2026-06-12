@@ -17,7 +17,6 @@ import {
 } from "./status-badge";
 import {
   CheckCircle2,
-  Sparkles,
   Calendar,
   Layers,
   Check,
@@ -100,7 +99,10 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
       }
     } else if (me.role === "admin" || me.role === "manager") {
       const pendingTasks = tasks.filter(
-        (task) => task.progress_status === "waiting_comment" && task.post_status !== "posted"
+        (task) =>
+          task.progress_status === "waiting_comment" &&
+          task.approval_status !== "approved" &&
+          task.post_status !== "posted"
       );
       if (pendingTasks.length > 0) {
         return [...pendingTasks].sort((a, b) => {
@@ -118,7 +120,7 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
   const shouldShowPopup = React.useCallback((recommended: ContentTask | null) => {
     if (!me || !recommended) return false;
 
-    const lastActionedStr = localStorage.getItem(`cp_reminder_last_actioned_${me.id}`);
+    const lastActionedStr = localStorage.getItem(`cp_reminder_last_actioned_${me.id}_${recommended.id}`);
     if (!lastActionedStr) return true;
 
     const lastActioned = Number(lastActionedStr);
@@ -140,10 +142,10 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
 
   // Set action / snooze state on dismissal or CTA click
   const recordAction = React.useCallback(() => {
-    if (!me) return;
-    localStorage.setItem(`cp_reminder_last_actioned_${me.id}`, String(Date.now()));
+    if (!me || !selectedTask) return;
+    localStorage.setItem(`cp_reminder_last_actioned_${me.id}_${selectedTask.id}`, String(Date.now()));
     localStorage.setItem(`cp_reminder_snooze_checked_${me.id}`, String(snooze));
-  }, [me, snooze]);
+  }, [me, selectedTask, snooze]);
 
   // Periodic active background timer (runs checks on load & every 30 seconds)
   React.useEffect(() => {
@@ -181,8 +183,8 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
   function getPriorityBadge(score: number) {
     if (score >= 130) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold bg-rose-500/10 text-rose-500 ring-1 ring-inset ring-rose-500/20 shadow-[0_0_8px_rgba(239,68,68,0.2)] animate-pulse-soft select-none whitespace-nowrap">
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
+        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold bg-rose-500/10 text-rose-600 ring-1 ring-inset ring-rose-500/20 select-none whitespace-nowrap">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
           {t("priority.critical")}
         </span>
       );
@@ -218,7 +220,7 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
   const handleApproveInstant = async () => {
     setLoading(true);
     try {
-      await setApproval(selectedTask.id, "approved");
+      await setApproval(selectedTask.id, "approved", "ready_to_post");
       setSuccess(true);
       recordAction();
       // Auto-close after short delay to let success animation play
@@ -241,12 +243,11 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleDismiss()}>
-      <DialogContent className="max-w-xl border border-white/20 dark:border-white/5 bg-white/90 dark:bg-[#0e1324]/90 backdrop-blur-3xl shadow-[0_20px_50px_rgba(109,40,217,0.15)] rounded-3xl p-7 text-foreground overflow-hidden">
+      <DialogContent className="max-w-xl overflow-hidden p-5 text-foreground sm:p-6">
         {success ? (
           <div className="py-10 text-center flex flex-col items-center justify-center animate-in fade-in zoom-in duration-300">
             <div className="relative mb-5">
-              <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl animate-pulse" />
-              <CheckCircle2 className="h-20 w-20 text-emerald-500 relative z-10 animate-bounce-soft" />
+              <CheckCircle2 className="h-16 w-16 text-emerald-500 relative z-10" />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-1 select-none">
               {t("reminder.success_approve")}
@@ -258,11 +259,11 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
         ) : (
           <div className="space-y-6">
             <DialogHeader className="flex flex-row items-start gap-4">
-              <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white grid place-items-center shadow-lg shadow-violet-500/20 shrink-0">
-                <BellRing className="h-5 w-5 animate-pulse-soft" />
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
+                <BellRing className="h-5 w-5" />
               </div>
               <div className="space-y-1">
-                <DialogTitle className="text-lg font-extrabold bg-clip-text text-transparent bg-brand-gradient tracking-tight leading-none pr-8">
+                <DialogTitle className="pr-8 text-lg font-extrabold leading-tight text-slate-950 dark:text-slate-50">
                   {isManager ? t("reminder.title_manager") : t("reminder.title_creator")}
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground pr-8 leading-relaxed">
@@ -271,17 +272,14 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
               </div>
             </DialogHeader>
 
-            {/* Glowing Frosted Glass Task Card */}
-            <div className="relative p-5 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/15 dark:border-white/5 shadow-inner hover:scale-[1.01] transition-transform duration-300">
-              <div className="absolute top-0 right-0 h-24 w-24 bg-violet-500/5 dark:bg-violet-500/10 rounded-full blur-2xl pointer-events-none" />
-              
+            <div className="relative rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
               <div className="space-y-3.5">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-1.5">
                     {getPriorityBadge(score)}
                   </div>
                   {selectedTask.scheduled_date && (
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground/80 bg-white/20 dark:bg-white/5 px-2 py-0.5 rounded-lg border border-white/10">
+                    <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-muted-foreground dark:border-white/10 dark:bg-[#111827]">
                       <Calendar className="h-3 w-3 text-violet-500" />
                       {new Date(selectedTask.scheduled_date).toLocaleDateString(
                         t("common.language") === "th" ? "th-TH" : "en-US",
@@ -296,7 +294,7 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
                   {selectedTask.topic}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-violet-100/5 dark:border-white/5">
+                <div className="flex flex-wrap items-center gap-1.5 border-t border-slate-200 pt-3 dark:border-white/10">
                   {platform && <ColorTag name={platform.name} color={platform.color} />}
                   {product && <ColorTag name={product.name} color={product.color} />}
                   <ProgressBadge value={selectedTask.progress_status} />
@@ -321,13 +319,13 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
             </div>
 
             {/* Snooze Checkbox Control */}
-            <div className="flex items-center gap-2.5 p-1 select-none">
+            <div className="flex items-start gap-2.5 select-none">
               <input
                 type="checkbox"
                 id="snooze-reminder"
                 checked={snooze}
                 onChange={(e) => setSnooze(e.target.checked)}
-                className="h-4.5 w-4.5 rounded-lg border border-white/20 dark:border-white/10 accent-violet-600 bg-white/20 dark:bg-white/5 cursor-pointer focus:ring-2 focus:ring-violet-500/50 transition-all"
+                className="mt-0.5 h-4.5 w-4.5 rounded border border-slate-300 accent-violet-600 cursor-pointer focus:ring-2 focus:ring-violet-500/50"
               />
               <label
                 htmlFor="snooze-reminder"
@@ -338,27 +336,27 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
             </div>
 
             {/* Premium CTA Row */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2 border-t border-violet-100/10 dark:border-white/5">
+            <div className="flex flex-col items-stretch justify-end gap-2 pt-3 border-t border-slate-200 dark:border-white/10 sm:flex-row sm:items-center">
               {isManager ? (
                 <>
                   <Button
                     variant="ghost"
                     onClick={handleDismiss}
-                    className="order-3 sm:order-1 text-muted-foreground hover:text-foreground cursor-pointer font-bold text-xs py-2 px-4 rounded-xl border border-transparent hover:border-white/10 active:scale-[0.98] transition-transform select-none"
+                    className="order-3 sm:order-1"
                   >
                     {t("reminder.button_later")}
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={handleViewDetails}
-                    className="order-2 sm:order-2 bg-white/10 dark:bg-white/5 border border-white/15 dark:border-white/5 hover:bg-white/15 dark:hover:bg-white/10 cursor-pointer font-bold text-xs py-2 px-4 rounded-xl active:scale-[0.98] transition-transform select-none"
+                    className="order-2 sm:order-2"
                   >
                     {t("reminder.button_review_detail")}
                   </Button>
                   <Button
                     onClick={handleApproveInstant}
                     disabled={loading}
-                    className="order-1 sm:order-3 bg-brand-gradient text-white shadow-lg shadow-violet-500/20 font-bold text-xs py-2 px-4 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-1.5 shrink-0 cursor-pointer select-none"
+                    className="order-1 sm:order-3"
                   >
                     {loading ? (
                       <>
@@ -378,13 +376,13 @@ export function SmartReminderModal({ onSelectTask }: SmartReminderModalProps) {
                   <Button
                     variant="ghost"
                     onClick={handleDismiss}
-                    className="order-2 sm:order-1 text-muted-foreground hover:text-foreground cursor-pointer font-bold text-xs py-2 px-4 rounded-xl border border-transparent hover:border-white/10 active:scale-[0.98] transition-transform select-none"
+                    className="order-2 sm:order-1"
                   >
                     {t("reminder.button_acknowledge")}
                   </Button>
                   <Button
                     onClick={handleViewDetails}
-                    className="order-1 sm:order-2 bg-brand-gradient text-white shadow-lg shadow-violet-500/20 font-bold text-xs py-2 px-4 rounded-xl active:scale-[0.98] transition-transform flex items-center justify-center gap-1.5 cursor-pointer select-none"
+                    className="order-1 sm:order-2"
                   >
                     {t("reminder.button_start_work")}
                   </Button>

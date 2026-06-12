@@ -423,10 +423,10 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 function Section({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-white/20 dark:border-white/5 bg-white/40 dark:bg-[#0a1128]/40 backdrop-blur-xl p-4 shadow-sm shadow-violet-500/5">
+    <section className="rounded-lg border border-slate-200 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-white/5">
       <div className="text-sm font-bold text-foreground mb-2.5">{title}</div>
       {children}
-    </div>
+    </section>
   );
 }
 

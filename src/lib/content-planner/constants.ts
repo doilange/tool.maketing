@@ -7,7 +7,7 @@ export const PROGRESS_STATUS_OPTIONS: { value: ProgressStatus; label: string }[]
   { value: "filming", label: "🎬 กำลังถ่ายทำ" },
   { value: "editing", label: "✂️ กำลังตัดต่อ" },
   { value: "ready_to_post", label: "✅ พร้อมโพสต์" },
-  { value: "waiting_comment", label: "💬 รอคอมเม้น" },
+  { value: "waiting_comment", label: "💬 รอคอมเมนต์" },
 ];
 
 export const POST_STATUS_OPTIONS: { value: PostStatus; label: string }[] = [

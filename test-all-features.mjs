@@ -4,7 +4,7 @@
  * Tests all client-side logic + API endpoints
  */
 
-const BASE = "http://localhost:3000";
+const API_BASE = "http://localhost:8005";
 let passed = 0;
 let failed = 0;
 
@@ -315,7 +315,7 @@ console.log("\n📋 [11] JSON Formatter — logic");
 console.log("\n🌍 [12] Check IP — API test");
 {
   try {
-    const res = await fetch(`${BASE}/api/check-ip?ip=8.8.8.8`);
+    const res = await fetch(`${API_BASE}/api/check-ip?ip=8.8.8.8`);
     const data = await res.json();
     assert("API returns 200", res.ok);
     assert("Returns country", !!data.country, data.country);
@@ -334,7 +334,7 @@ console.log("\n🌍 [12] Check IP — API test");
 console.log("\n👤 [13] Check UID (Live/Die) — API test");
 {
   try {
-    const res = await fetch(`${BASE}/api/check-uid`, {
+    const res = await fetch(`${API_BASE}/api/check-uid`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ uids: ["4", "999999999999999"] }),
@@ -358,7 +358,7 @@ console.log("\n👤 [13] Check UID (Live/Die) — API test");
 console.log("\n🔎 [14] Get UID from URL — API test");
 {
   try {
-    const res = await fetch(`${BASE}/api/get-uid`, {
+    const res = await fetch(`${API_BASE}/api/get-uid`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ urls: ["100000000000001"] }), // numeric UID passthrough
@@ -379,7 +379,7 @@ console.log("\n📝 [15] Notepad — API test");
 {
   try {
     // Create note
-    const createRes = await fetch(`${BASE}/api/notepad`, {
+    const createRes = await fetch(`${API_BASE}/api/notepad`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: "Test note from automated test" }),
@@ -391,13 +391,13 @@ console.log("\n📝 [15] Notepad — API test");
 
     // Read note
     const noteId = createData.id;
-    const readRes = await fetch(`${BASE}/api/notepad/${noteId}`);
+    const readRes = await fetch(`${API_BASE}/api/notepad/${noteId}`);
     const readData = await readRes.json();
     assert("Read note returns 200", readRes.ok);
     assert("Note content matches", readData.note?.content === "Test note from automated test");
 
     // Update note
-    const updateRes = await fetch(`${BASE}/api/notepad/${noteId}`, {
+    const updateRes = await fetch(`${API_BASE}/api/notepad/${noteId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: "Updated content" }),
@@ -407,12 +407,12 @@ console.log("\n📝 [15] Notepad — API test");
     assert("Update returns success", updateData.success === true);
 
     // Verify update
-    const verifyRes = await fetch(`${BASE}/api/notepad/${noteId}`);
+    const verifyRes = await fetch(`${API_BASE}/api/notepad/${noteId}`);
     const verifyData = await verifyRes.json();
     assert("Updated content persisted", verifyData.note?.content === "Updated content");
 
     // 404 test
-    const notFoundRes = await fetch(`${BASE}/api/notepad/nonexistent_id_xyz`);
+    const notFoundRes = await fetch(`${API_BASE}/api/notepad/nonexistent_id_xyz`);
     assert("Non-existent note returns 404", notFoundRes.status === 404);
   } catch (e) {
     assert("Notepad API reachable", false, e.message);

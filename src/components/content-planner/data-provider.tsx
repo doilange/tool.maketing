@@ -33,6 +33,12 @@ type DataContextValue = {
 
 const DataContext = React.createContext<DataContextValue | null>(null);
 
+function realtimeRowId(value: unknown) {
+  if (!value || typeof value !== "object" || !("id" in value)) return undefined;
+  const id = (value as { id?: unknown }).id;
+  return typeof id === "string" ? id : undefined;
+}
+
 export function useData() {
   const ctx = React.useContext(DataContext);
   if (!ctx) throw new Error("useData must be used within DataProvider");
@@ -101,7 +107,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         "postgres_changes",
         { event: "*", schema: "public", table: "content_tasks" },
         (payload) => {
-          console.log("[Realtime] content_tasks:", payload.eventType, (payload.new as any)?.id || (payload.old as any)?.id);
+          console.log(
+            "[Realtime] content_tasks:",
+            payload.eventType,
+            realtimeRowId(payload.new) || realtimeRowId(payload.old)
+          );
           setTasks((prev) => {
             if (payload.eventType === "INSERT") {
               const row = payload.new as ContentTask;
@@ -124,7 +134,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         "postgres_changes",
         { event: "*", schema: "public", table: "comments" },
         (payload) => {
-          console.log("[Realtime] comments:", payload.eventType, (payload.new as any)?.id || (payload.old as any)?.id);
+          console.log(
+            "[Realtime] comments:",
+            payload.eventType,
+            realtimeRowId(payload.new) || realtimeRowId(payload.old)
+          );
           setComments((prev) => {
             if (payload.eventType === "INSERT") {
               const row = payload.new as Comment;
@@ -256,6 +270,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     async (id, patch) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
       const { id: _ignore, created_at, updated_at, ...clean } = patch as any;
+      if (clean.progress_status === "waiting_comment" && clean.approval_status === undefined) {
+        clean.approval_status = "pending";
+      }
       const { error } = await supabase
         .from("content_tasks")
         .update(clean)

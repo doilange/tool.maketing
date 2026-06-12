@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { createClient } from "@/lib/content-planner/supabase/client";
 import { Button } from "@/components/content-planner/ui/button";
@@ -37,11 +37,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
 
   const toggleLanguage = () => {
     const nextLocale = locale === "th" ? "en" : "th";
@@ -77,17 +73,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 planner-theme overflow-hidden select-none">
-      {/* Slow-floating background glow backlights */}
-      <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] rounded-full bg-violet-400/20 dark:bg-violet-500/10 blur-[80px] pointer-events-none animate-float-slow" />
-      <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] rounded-full bg-pink-400/20 dark:bg-pink-500/10 blur-[90px] pointer-events-none animate-float-delayed" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] rounded-full bg-blue-300/15 dark:bg-blue-600/5 blur-[100px] pointer-events-none animate-pulse-soft" />
-
-      {/* Floating Theme & Language controls */}
-      <div className="absolute top-4 right-4 z-20 flex items-center space-x-2.5">
+    <div className="relative flex min-h-[100svh] w-full items-center justify-center overflow-x-hidden px-4 py-20 planner-theme sm:p-6">
+      <div className="absolute right-4 top-4 z-20 flex items-center space-x-2">
         <button
           onClick={toggleLanguage}
-          className="flex items-center space-x-1.5 px-3 h-9 bg-white/40 dark:bg-[#1c2541]/40 border border-white/15 dark:border-white/5 rounded-xl text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-500/20 transition-all active:scale-95 font-semibold text-xs shadow-sm cursor-pointer"
+          className="flex h-11 items-center space-x-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-muted-foreground shadow-sm transition-colors hover:border-violet-200 hover:text-violet-700 dark:border-white/10 dark:bg-[#111827] dark:hover:text-violet-300 cursor-pointer"
           aria-label="Change language"
         >
           <Languages className="h-4 w-4 text-violet-500 dark:text-violet-400" />
@@ -97,7 +87,7 @@ export default function LoginPage() {
         {mounted && (
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="flex items-center justify-center w-9 h-9 bg-white/40 dark:bg-[#1c2541]/40 border border-white/15 dark:border-white/5 rounded-xl text-muted-foreground hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-500/20 transition-all active:scale-95 shadow-sm cursor-pointer"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-muted-foreground shadow-sm transition-colors hover:border-violet-200 hover:text-violet-700 dark:border-white/10 dark:bg-[#111827] dark:hover:text-violet-300 cursor-pointer"
             aria-label="Toggle theme"
           >
             {theme === "dark" ? (
@@ -109,25 +99,14 @@ export default function LoginPage() {
         )}
       </div>
 
-      {/* Centered Login Card Container */}
-      <div className="w-full max-w-[440px] z-10">
-        <div className="relative group/card transition-all duration-300 animate-in fade-in zoom-in-95 duration-500">
-          
-          {/* Outer glowing halo wrap */}
-          <div className="absolute inset-0 bg-brand-gradient opacity-10 dark:opacity-15 blur-2xl rounded-3xl scale-[1.02] pointer-events-none transition-all duration-300 group-hover/card:opacity-15 dark:group-hover/card:opacity-20" />
-          
-          {/* Glowing gradient border line */}
-          <div className="absolute inset-0 bg-brand-gradient opacity-20 dark:opacity-30 rounded-3xl p-[1px] pointer-events-none" />
-          
-          {/* The Glassmorphism card container */}
-          <div className="relative bg-white/70 dark:bg-[#131a30]/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-2xl rounded-3xl p-8 overflow-hidden">
+      <div className="z-10 w-full max-w-[420px]">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-[#111827] sm:p-8">
             
             {/* Header decoration */}
             <div className="flex flex-col items-center justify-center text-center">
               
-              {/* Outer brand gradient ring around logo */}
-              <div className="relative p-[1.5px] bg-brand-gradient rounded-full shadow-lg shadow-violet-500/10 mb-4 group-hover/card:scale-105 transition-transform duration-300">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-[#131a30] flex items-center justify-center">
+              <div className="mb-4 rounded-full border border-violet-200 bg-white p-1 shadow-sm dark:border-violet-400/30 dark:bg-[#111827]">
+                <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-white dark:bg-[#111827]">
                   <img
                     src="/logo.png"
                     alt="MT Content Planner Logo"
@@ -136,16 +115,15 @@ export default function LoginPage() {
                 </div>
               </div>
               
-              {/* Glossy Brand Gradient Title Text */}
-              <h1 className="text-2xl font-extrabold tracking-tight bg-clip-text text-transparent bg-brand-gradient dark:from-white dark:to-slate-300">
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-950 dark:text-slate-50">
                 MT Content Planner
               </h1>
               
-              <p className="text-xs font-extrabold text-violet-600 dark:text-violet-400 tracking-wider uppercase mt-1">
+              <p className="mt-1 text-sm font-bold text-violet-700 dark:text-violet-300">
                 {mode === "signin" ? t("login.welcome_back") : t("login.create_account")}
               </p>
               
-              <p className="text-sm text-muted-foreground mt-2 mb-8">
+              <p className="mb-7 mt-2 text-sm text-muted-foreground">
                 {mode === "signin" ? t("login.signin_subtitle") : t("login.signup_subtitle")}
               </p>
             </div>
@@ -156,7 +134,7 @@ export default function LoginPage() {
               {/* Full name field (only for signup) */}
               {mode === "signup" && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold tracking-wide uppercase text-muted-foreground/90 pl-1">
+                  <Label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                     {t("login.full_name")}
                   </Label>
                   <div className="relative group/input">
@@ -168,7 +146,7 @@ export default function LoginPage() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Jane Doe"
-                      className="pl-10.5 pr-4 h-11 bg-white/40 dark:bg-[#0a1128]/40 border border-border/80 group-focus-within/input:border-violet-500 group-focus-within/input:ring-2 group-focus-within/input:ring-violet-500/10 transition-all rounded-xl placeholder:text-muted-foreground/40 text-foreground"
+                      className="h-11 pl-10.5 pr-4"
                     />
                   </div>
                 </div>
@@ -176,7 +154,7 @@ export default function LoginPage() {
 
               {/* Email field */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold tracking-wide uppercase text-muted-foreground/90 pl-1">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                   {t("login.email")}
                 </Label>
                 <div className="relative group/input">
@@ -189,14 +167,14 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
-                    className="pl-10.5 pr-4 h-11 bg-white/40 dark:bg-[#0a1128]/40 border border-border/80 group-focus-within/input:border-violet-500 group-focus-within/input:ring-2 group-focus-within/input:ring-violet-500/10 transition-all rounded-xl placeholder:text-muted-foreground/40 text-foreground"
+                    className="h-11 pl-10.5 pr-4"
                   />
                 </div>
               </div>
 
               {/* Password field */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold tracking-wide uppercase text-muted-foreground/90 pl-1">
+                <Label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                   {t("login.password")}
                 </Label>
                 <div className="relative group/input">
@@ -210,12 +188,12 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="pl-10.5 pr-11 h-11 bg-white/40 dark:bg-[#0a1128]/40 border border-border/80 group-focus-within/input:border-violet-500 group-focus-within/input:ring-2 group-focus-within/input:ring-violet-500/10 transition-all rounded-xl placeholder:text-muted-foreground/40 text-foreground"
+                    className="h-11 pl-10.5 pr-11"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground/60 hover:text-violet-500 dark:hover:text-violet-400 focus:outline-none transition-colors"
+                    className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-slate-100 hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 dark:hover:bg-white/10 dark:hover:text-violet-300"
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -250,7 +228,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-11 bg-brand-gradient hover:opacity-90 active:scale-[0.98] transition-all rounded-xl shadow-lg shadow-violet-500/15 dark:shadow-violet-950/20 text-white font-medium flex items-center justify-center border-none mt-2"
+                className="mt-2 h-11 w-full"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -281,7 +259,6 @@ export default function LoginPage() {
                 {mode === "signin" ? t("login.create_account") : t("login.signin")}
               </button>
             </div>
-          </div>
         </div>
       </div>
     </div>
