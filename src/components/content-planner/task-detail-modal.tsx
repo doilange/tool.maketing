@@ -29,21 +29,28 @@ import { Check, MessageCircle, X, RefreshCcw, Activity, ExternalLink, Loader2, C
 export function TaskDetailModal({
   open,
   onOpenChange,
-  task,
+  task: initialTask,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   task: ContentTask | null;
 }) {
-  const { profiles, products, platforms, comments, activity, me, addComment, setApproval, updateTask } = useData();
+  const { tasks, profiles, products, platforms, comments, activity, me, addComment, setApproval, updateTask } = useData();
   const t = useT();
   const tAction = useActivityAction();
   const progressOptions = useProgressOptions();
   const postOptions = usePostOptions();
   const [text, setText] = React.useState("");
   const [posting, setPosting] = React.useState(false);
+  const [statusSaving, setStatusSaving] = React.useState<"progress" | "post" | null>(null);
+  const [statusError, setStatusError] = React.useState<string | null>(null);
   const [approvalLoading, setApprovalLoading] = React.useState<ApprovalStatus | null>(null);
   const [approvalSuccess, setApprovalSuccess] = React.useState<ApprovalStatus | null>(null);
+
+  const task = React.useMemo(() => {
+    if (!initialTask) return null;
+    return tasks.find((candidate) => candidate.id === initialTask.id) ?? initialTask;
+  }, [initialTask, tasks]);
 
   const taskComments = React.useMemo(
     () => comments.filter((c) => task && c.task_id === task.id),
@@ -82,6 +89,32 @@ export function TaskDetailModal({
       console.error(e);
     } finally {
       setApprovalLoading(null);
+    }
+  }
+
+  async function changeProgressStatus(value: ProgressStatus) {
+    if (!task || statusSaving) return;
+    setStatusError(null);
+    setStatusSaving("progress");
+    try {
+      await updateTask(task.id, { progress_status: value });
+    } catch (error) {
+      setStatusError(error instanceof Error ? error.message : t("planner.update_failed"));
+    } finally {
+      setStatusSaving(null);
+    }
+  }
+
+  async function changePostStatus(value: ContentTask["post_status"]) {
+    if (!task || statusSaving) return;
+    setStatusError(null);
+    setStatusSaving("post");
+    try {
+      await updateTask(task.id, { post_status: value });
+    } catch (error) {
+      setStatusError(error instanceof Error ? error.message : t("planner.update_failed"));
+    } finally {
+      setStatusSaving(null);
     }
   }
 
@@ -257,11 +290,9 @@ export function TaskDetailModal({
                     </div>
                     <Select
                       value={task.progress_status}
-                      onChange={(e) =>
-                        updateTask(task.id, {
-                          progress_status: e.target.value as ProgressStatus,
-                        })
-                      }
+                      disabled={statusSaving !== null}
+                      aria-busy={statusSaving === "progress"}
+                      onChange={(e) => void changeProgressStatus(e.target.value as ProgressStatus)}
                     >
                       {progressOptions.map((o) => (
                         <option key={o.value} value={o.value}>
@@ -276,11 +307,9 @@ export function TaskDetailModal({
                     </div>
                     <Select
                       value={task.post_status}
-                      onChange={(e) =>
-                        updateTask(task.id, {
-                          post_status: e.target.value as ContentTask["post_status"],
-                        })
-                      }
+                      disabled={statusSaving !== null}
+                      aria-busy={statusSaving === "post"}
+                      onChange={(e) => void changePostStatus(e.target.value as ContentTask["post_status"])}
                     >
                       {postOptions.map((o) => (
                         <option key={o.value} value={o.value}>
@@ -289,6 +318,16 @@ export function TaskDetailModal({
                       ))}
                     </Select>
                   </div>
+                  {statusSaving && (
+                    <div className="text-xs font-medium text-muted-foreground">
+                      {t("detail.saving_status")}
+                    </div>
+                  )}
+                  {statusError && (
+                    <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+                      {statusError}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-xs text-muted-foreground">

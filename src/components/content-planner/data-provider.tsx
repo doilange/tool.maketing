@@ -268,16 +268,37 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const updateTask = React.useCallback<DataContextValue["updateTask"]>(
     async (id, patch) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-      const { id: _ignore, created_at, updated_at, ...clean } = patch as any;
+      const clean = { ...patch };
+      delete clean.id;
+      delete clean.created_at;
+      delete clean.updated_at;
       if (clean.progress_status === "waiting_comment" && clean.approval_status === undefined) {
         clean.approval_status = "pending";
       }
+
+      let previousTasks: ContentTask[] | null = null;
+      setTasks((prev) => {
+        previousTasks = prev;
+        const nextUpdatedAt = new Date().toISOString();
+        return prev.map((task) =>
+          task.id === id
+            ? {
+                ...task,
+                ...clean,
+                updated_at: nextUpdatedAt,
+              }
+            : task
+        );
+      });
+
       const { error } = await supabase
         .from("content_tasks")
         .update(clean)
         .eq("id", id);
-      if (error) throw error;
+      if (error) {
+        if (previousTasks) setTasks(previousTasks);
+        throw error;
+      }
       logActivity(id, "task_updated", null, clean);
     },
     [supabase, logActivity]
@@ -323,11 +344,30 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     async (taskId, approval, progress) => {
       const patch: Partial<ContentTask> = { approval_status: approval };
       if (progress) patch.progress_status = progress;
+
+      let previousTasks: ContentTask[] | null = null;
+      setTasks((prev) => {
+        previousTasks = prev;
+        const nextUpdatedAt = new Date().toISOString();
+        return prev.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                ...patch,
+                updated_at: nextUpdatedAt,
+              }
+            : task
+        );
+      });
+
       const { error } = await supabase
         .from("content_tasks")
         .update(patch)
         .eq("id", taskId);
-      if (error) throw error;
+      if (error) {
+        if (previousTasks) setTasks(previousTasks);
+        throw error;
+      }
       logActivity(taskId, `approval_${approval}`, null, { approval_status: approval });
     },
     [supabase, logActivity]

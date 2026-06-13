@@ -96,6 +96,7 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "planner.no_match": "ไม่พบงานที่ตรงกับตัวกรอง",
     "planner.delete_confirm": "ลบงานนี้?",
     "planner.delete_failed": "ลบไม่สำเร็จ",
+    "planner.update_failed": "อัปเดตไม่สำเร็จ",
 
     // export menu
     "export.button": "ดาวน์โหลด CSV",
@@ -162,6 +163,7 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "detail.status": "สถานะ",
     "detail.progress": "ความคืบหน้า",
     "detail.post_status": "สถานะการโพสต์",
+    "detail.saving_status": "กำลังบันทึกสถานะ…",
     "detail.no_permission_status": "คุณไม่มีสิทธิ์แก้ไขสถานะ",
     "detail.approval": "การอนุมัติ",
     "detail.approve": "อนุมัติ",
@@ -315,6 +317,7 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "planner.no_match": "No tasks match your filters.",
     "planner.delete_confirm": "Delete this task?",
     "planner.delete_failed": "Delete failed",
+    "planner.update_failed": "Update failed",
 
     "export.button": "Download CSV",
     "export.last_7": "Last 7 days",
@@ -377,6 +380,7 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "detail.status": "Status",
     "detail.progress": "Progress",
     "detail.post_status": "Post status",
+    "detail.saving_status": "Saving status…",
     "detail.no_permission_status": "You don't have permission to edit status.",
     "detail.approval": "Approval",
     "detail.approve": "Approve",
