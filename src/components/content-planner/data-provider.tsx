@@ -9,6 +9,13 @@ import type {
   Profile,
 } from "@/lib/content-planner/types";
 import { createClient } from "@/lib/content-planner/supabase/client";
+import {
+  HANDOFF_CLAIMED_ACTION,
+  REVIEW_SUBMITTED_ACTION,
+  createReviewSnapshot,
+  getNextReviewRound,
+  type HandoffPurpose,
+} from "@/lib/content-planner/review";
 
 type DataContextValue = {
   loading: boolean;
@@ -23,6 +30,8 @@ type DataContextValue = {
   updateTask: (id: string, patch: Partial<ContentTask>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   addComment: (taskId: string, text: string) => Promise<void>;
+  submitForReview: (taskId: string) => Promise<void>;
+  claimHandoff: (taskId: string, purpose: HandoffPurpose) => Promise<void>;
   setApproval: (
     taskId: string,
     approval: ContentTask["approval_status"],
@@ -32,6 +41,8 @@ type DataContextValue = {
 };
 
 const DataContext = React.createContext<DataContextValue | null>(null);
+const CLEANUP_LAST_RUN_KEY = "content-planner-cleanup-last-run";
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 function realtimeRowId(value: unknown) {
   if (!value || typeof value !== "object" || !("id" in value)) return undefined;
@@ -195,6 +206,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
   }, [supabase, meId]);
 
+  React.useEffect(() => {
+    if (!meId) return;
+
+    try {
+      const lastRun = Number(window.localStorage.getItem(CLEANUP_LAST_RUN_KEY) ?? 0);
+      if (Number.isFinite(lastRun) && Date.now() - lastRun < CLEANUP_INTERVAL_MS) return;
+
+      window.localStorage.setItem(CLEANUP_LAST_RUN_KEY, String(Date.now()));
+      fetch("/api/content-planner/cleanup", { method: "POST" }).catch(() => {
+        window.localStorage.removeItem(CLEANUP_LAST_RUN_KEY);
+      });
+    } catch {
+      fetch("/api/content-planner/cleanup", { method: "POST" }).catch(() => undefined);
+    }
+  }, [meId]);
+
   const me = React.useMemo(
     () => profiles.find((p) => p.id === meId) ?? null,
     [profiles, meId]
@@ -304,6 +331,76 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     [supabase, logActivity]
   );
 
+  const submitForReview = React.useCallback<DataContextValue["submitForReview"]>(
+    async (taskId) => {
+      const task = tasks.find((item) => item.id === taskId);
+      if (!task) throw new Error("Task not found");
+
+      const patch: Partial<ContentTask> = {
+        progress_status: "waiting_comment",
+        approval_status: "pending",
+      };
+      const snapshotTask: ContentTask = {
+        ...task,
+        progress_status: "waiting_comment",
+        approval_status: "pending",
+      };
+      const taskActivity = activity.filter((item) => item.task_id === taskId);
+      const reviewRound = getNextReviewRound(taskActivity);
+
+      let previousTasks: ContentTask[] | null = null;
+      setTasks((prev) => {
+        previousTasks = prev;
+        const nextUpdatedAt = new Date().toISOString();
+        return prev.map((item) =>
+          item.id === taskId
+            ? {
+                ...item,
+                ...patch,
+                updated_at: nextUpdatedAt,
+              }
+            : item
+        );
+      });
+
+      const { error } = await supabase
+        .from("content_tasks")
+        .update(patch)
+        .eq("id", taskId);
+      if (error) {
+        if (previousTasks) setTasks(previousTasks);
+        throw error;
+      }
+
+      await logActivity(
+        taskId,
+        REVIEW_SUBMITTED_ACTION,
+        {
+          progress_status: task.progress_status,
+          approval_status: task.approval_status,
+        },
+        {
+          review_round: reviewRound,
+          snapshot: createReviewSnapshot(snapshotTask),
+        }
+      );
+    },
+    [activity, logActivity, supabase, tasks]
+  );
+
+  const claimHandoff = React.useCallback<DataContextValue["claimHandoff"]>(
+    async (taskId, purpose) => {
+      const task = tasks.find((item) => item.id === taskId);
+      if (!task) throw new Error("Task not found");
+
+      await logActivity(taskId, HANDOFF_CLAIMED_ACTION, null, {
+        purpose,
+        snapshot: createReviewSnapshot(task),
+      });
+    },
+    [logActivity, tasks]
+  );
+
   const deleteTask = React.useCallback<DataContextValue["deleteTask"]>(
     async (id) => {
       // Use server-side API route with Service Role Key to bypass RLS
@@ -392,6 +489,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateTask,
     deleteTask,
     addComment,
+    submitForReview,
+    claimHandoff,
     setApproval,
     signOut,
   };

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  cleanupExpiredContentAssets,
+  ensureContentAssetBucket,
+} from "@/lib/content-planner/storage-assets";
 
 export async function POST() {
   try {
@@ -43,7 +47,15 @@ export async function POST() {
       console.error("Failed to delete old comments:", commentsError);
     }
 
-    return NextResponse.json({ success: true, message: "Cleanup completed successfully" });
+    // 3. Delete uploaded content assets older than 3 months
+    await ensureContentAssetBucket(adminClient);
+    const assetCleanup = await cleanupExpiredContentAssets(adminClient);
+
+    return NextResponse.json({
+      success: true,
+      message: "Cleanup completed successfully",
+      assets: assetCleanup,
+    });
   } catch (error: unknown) {
     console.error("Cleanup error:", error);
     const message = error instanceof Error ? error.message : "Unknown cleanup error";

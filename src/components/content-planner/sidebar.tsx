@@ -1,7 +1,7 @@
 "use client";
 import { Link, useRouter } from "@/i18n/navigation";
 import { usePathname } from "@/i18n/navigation";
-import { LayoutDashboard, Table, Calendar } from "lucide-react";
+import { Calendar, ClipboardCheck, LayoutDashboard, Table } from "lucide-react";
 import { cn } from "@/lib/content-planner/utils";
 import { useT } from "@/lib/content-planner/i18n";
 import * as React from "react";
@@ -9,6 +9,7 @@ import * as React from "react";
 const links = [
   { href: "/content-planner", key: "sidebar.dashboard", icon: LayoutDashboard, exact: true },
   { href: "/content-planner/planner", key: "sidebar.planner", icon: Table, exact: false },
+  { href: "/content-planner/review", key: "sidebar.review", icon: ClipboardCheck, exact: false },
   { href: "/content-planner/calendar", key: "sidebar.calendar", icon: Calendar, exact: false },
 ];
 
@@ -92,7 +93,7 @@ export function Sidebar() {
         v0.1 · Supabase Realtime
       </div>
     </aside>
-    <nav className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-3 gap-1 rounded-2xl border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-[#0b1120]/95 md:hidden">
+    <nav className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-4 gap-1 rounded-2xl border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-[#0b1120]/95 md:hidden">
       {links.map((l) => {
         const active = isActive(l.href, l.exact);
         const pending = isPending && pendingHref === l.href;

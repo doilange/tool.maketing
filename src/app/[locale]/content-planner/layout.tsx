@@ -4,17 +4,13 @@ import { DataProvider, useData } from "@/components/content-planner/data-provide
 import { LanguageProvider } from "@/lib/content-planner/i18n";
 import { Sidebar } from "@/components/content-planner/sidebar";
 import { Topbar } from "@/components/content-planner/topbar";
-import { SmartReminderModal } from "@/components/content-planner/smart-reminder-modal";
-import { TaskDetailModal } from "@/components/content-planner/task-detail-modal";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import type { ContentTask } from "@/lib/content-planner/types";
 import * as React from "react";
 
 function Inner({ children }: { children: React.ReactNode }) {
   const { loading, me } = useData();
   const router = useRouter();
   const pathname = usePathname();
-  const [reviewTask, setReviewTask] = React.useState<ContentTask | null>(null);
 
   // next-intl's usePathname returns the path without locale prefix
   const isLoginPage = pathname?.startsWith("/content-planner/login");
@@ -50,12 +46,6 @@ function Inner({ children }: { children: React.ReactNode }) {
           </main>
         </div>
       </div>
-      <SmartReminderModal onSelectTask={setReviewTask} />
-      <TaskDetailModal
-        open={!!reviewTask}
-        onOpenChange={(open) => !open && setReviewTask(null)}
-        task={reviewTask}
-      />
     </div>
   );
 }

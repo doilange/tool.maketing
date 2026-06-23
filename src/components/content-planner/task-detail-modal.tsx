@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/content-planner/ui/dialog";
+import { AssetCarousel } from "@/components/content-planner/asset-carousel";
 import { Button } from "@/components/content-planner/ui/button";
 import { Textarea } from "@/components/content-planner/ui/textarea";
 import { Select } from "@/components/content-planner/ui/select";
@@ -23,8 +24,10 @@ import {
   ContentTask,
   ProgressStatus,
 } from "@/lib/content-planner/types";
+import { extractContentAssets } from "@/lib/content-planner/assets";
+import { getReviewSubmissions, type HandoffPurpose } from "@/lib/content-planner/review";
 import { formatDate, formatDateTime, initials } from "@/lib/content-planner/utils";
-import { Check, MessageCircle, X, RefreshCcw, Activity, ExternalLink, Loader2, CheckCircle2 } from "lucide-react";
+import { Check, MessageCircle, X, RefreshCcw, Activity, ExternalLink, Loader2, CheckCircle2, Send, Handshake, FileCheck2 } from "lucide-react";
 
 export function TaskDetailModal({
   open,
@@ -35,7 +38,7 @@ export function TaskDetailModal({
   onOpenChange: (o: boolean) => void;
   task: ContentTask | null;
 }) {
-  const { tasks, profiles, products, platforms, comments, activity, me, addComment, setApproval, updateTask } = useData();
+  const { tasks, profiles, products, platforms, comments, activity, me, addComment, submitForReview, claimHandoff, setApproval, updateTask } = useData();
   const t = useT();
   const tAction = useActivityAction();
   const progressOptions = useProgressOptions();
@@ -46,6 +49,13 @@ export function TaskDetailModal({
   const [statusError, setStatusError] = React.useState<string | null>(null);
   const [approvalLoading, setApprovalLoading] = React.useState<ApprovalStatus | null>(null);
   const [approvalSuccess, setApprovalSuccess] = React.useState<ApprovalStatus | null>(null);
+  const [reviewFeedback, setReviewFeedback] = React.useState("");
+  const [reviewError, setReviewError] = React.useState<string | null>(null);
+  const [workflowError, setWorkflowError] = React.useState<string | null>(null);
+  const [reviewSubmitting, setReviewSubmitting] = React.useState(false);
+  const [reviewSuccess, setReviewSuccess] = React.useState(false);
+  const [handoffLoading, setHandoffLoading] = React.useState<HandoffPurpose | null>(null);
+  const [handoffSuccess, setHandoffSuccess] = React.useState(false);
 
   const task = React.useMemo(() => {
     if (!initialTask) return null;
@@ -59,6 +69,10 @@ export function TaskDetailModal({
   const taskActivity = React.useMemo(
     () => activity.filter((a) => task && a.task_id === task.id),
     [activity, task]
+  );
+  const reviewSubmissions = React.useMemo(
+    () => getReviewSubmissions(taskActivity),
+    [taskActivity]
   );
 
   if (!task) return null;
@@ -78,17 +92,59 @@ export function TaskDetailModal({
 
   async function approveAs(value: ApprovalStatus, progress?: ProgressStatus) {
     if (!me || !task || approvalLoading !== null) return;
+    const feedback = reviewFeedback.trim();
+    if ((value === "needs_edits" || value === "rejected") && !feedback) {
+      setReviewError(t("detail.feedback_required"));
+      return;
+    }
     setApprovalLoading(value);
     setApprovalSuccess(null);
+    setReviewError(null);
     try {
       await setApproval(task.id, value, progress);
+      if (feedback) {
+        await addComment(task.id, feedback);
+      }
       setApprovalSuccess(value);
+      setReviewFeedback("");
       // Auto-reset success state after 2.5 seconds
       setTimeout(() => setApprovalSuccess(null), 2500);
     } catch (e) {
       console.error(e);
     } finally {
       setApprovalLoading(null);
+    }
+  }
+
+  async function submitCurrentForReview() {
+    if (!task || reviewSubmitting) return;
+    setReviewSubmitting(true);
+    setReviewSuccess(false);
+    setWorkflowError(null);
+    try {
+      await submitForReview(task.id);
+      setReviewSuccess(true);
+      setTimeout(() => setReviewSuccess(false), 2500);
+    } catch (error) {
+      setWorkflowError(error instanceof Error ? error.message : t("planner.update_failed"));
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }
+
+  async function claimCurrentHandoff(purpose: HandoffPurpose) {
+    if (!task || handoffLoading) return;
+    setHandoffLoading(purpose);
+    setHandoffSuccess(false);
+    setWorkflowError(null);
+    try {
+      await claimHandoff(task.id, purpose);
+      setHandoffSuccess(true);
+      setTimeout(() => setHandoffSuccess(false), 2500);
+    } catch (error) {
+      setWorkflowError(error instanceof Error ? error.message : t("planner.update_failed"));
+    } finally {
+      setHandoffLoading(null);
     }
   }
 
@@ -119,6 +175,10 @@ export function TaskDetailModal({
   }
 
   const canEdit = me?.role !== "viewer";
+  const isPendingReview = task.progress_status === "waiting_comment" && task.approval_status === "pending";
+  const latestReview = reviewSubmissions[0];
+  const reviewAssets = extractContentAssets(latestReview?.snapshot.file_url, task.file_url);
+  const firstAsset = reviewAssets[0];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -154,10 +214,10 @@ export function TaskDetailModal({
               <Field
                 label={t("detail.field.file")}
                 value={
-                  task.file_url ? (
+                  firstAsset ? (
                     <a
                       className="text-violet-600 hover:underline inline-flex items-center gap-1"
-                      href={task.file_url}
+                      href={firstAsset.originalUrl}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -188,6 +248,65 @@ export function TaskDetailModal({
                 </div>
               </Section>
             )}
+
+            <Section title={t("detail.asset_preview")}>
+              <AssetCarousel
+                assets={reviewAssets}
+                emptyText={t("review.no_assets")}
+                openLabel={t("common.open")}
+                unavailableText={t("common.preview_unavailable")}
+              />
+            </Section>
+
+            <Section
+              title={
+                <span className="inline-flex items-center gap-2">
+                  <FileCheck2 className="h-4 w-4 text-violet-500" /> {t("detail.review_evidence")}
+                </span>
+              }
+            >
+              <div className="space-y-3">
+                {reviewSubmissions.length === 0 && (
+                  <div className="text-xs text-muted-foreground">{t("detail.no_review_evidence")}</div>
+                )}
+                {reviewSubmissions.slice(0, 3).map((submission) => {
+                  const submitter = profiles.find((p) => p.id === submission.user_id);
+                  const submissionAssets = extractContentAssets(submission.snapshot.file_url);
+                  return (
+                    <div
+                      key={submission.id}
+                      className="rounded-lg border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-[#111827]"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="text-xs font-extrabold text-foreground">
+                          {t("detail.review_round", { n: submission.round })}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {formatDateTime(submission.created_at)}
+                        </div>
+                      </div>
+                      <div className="mt-1 text-[11px] font-medium text-muted-foreground">
+                        {submitter?.full_name ?? "System"}
+                      </div>
+                      <div className="mt-2 grid gap-2 text-sm">
+                        <SnapshotBlock title={t("detail.section.caption")} value={submission.snapshot.caption} />
+                        <SnapshotBlock title={t("detail.section.brief")} value={submission.snapshot.creative_brief} />
+                        {submissionAssets[0] && (
+                          <a
+                            href={submissionAssets[0].originalUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-bold text-violet-600 hover:underline dark:text-violet-300"
+                          >
+                            {t("detail.field.file")} <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Section>
 
             <Section title={t("detail.section.caption")}>
               <p className="whitespace-pre-wrap text-sm text-foreground">
@@ -281,6 +400,101 @@ export function TaskDetailModal({
           </div>
 
           <div className="space-y-4">
+            <Section
+              title={
+                <span className="inline-flex items-center gap-2">
+                  <Send className="h-4 w-4 text-violet-500" /> {t("detail.review_workflow")}
+                </span>
+              }
+            >
+              {canEdit ? (
+                <div className="space-y-3">
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    {t("detail.submit_review_hint")}
+                  </p>
+                  <Button
+                    className="w-full"
+                    disabled={reviewSubmitting || isPendingReview}
+                    onClick={() => void submitCurrentForReview()}
+                  >
+                    {reviewSubmitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                    {reviewSubmitting ? t("detail.sending_review") : t("detail.submit_review")}
+                  </Button>
+                  {isPendingReview && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">
+                      {t("review.pending")}
+                    </div>
+                  )}
+                  {reviewSuccess && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+                      {t("detail.review_submitted_success")}
+                    </div>
+                  )}
+                  {workflowError && (
+                    <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+                      {workflowError}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground">
+                  {t("detail.no_permission_status")}
+                </div>
+              )}
+            </Section>
+
+            <Section
+              title={
+                <span className="inline-flex items-center gap-2">
+                  <Handshake className="h-4 w-4 text-violet-500" /> {t("detail.handoff")}
+                </span>
+              }
+            >
+              {canEdit ? (
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    disabled={handoffLoading !== null}
+                    onClick={() => void claimCurrentHandoff("edit")}
+                  >
+                    {handoffLoading === "edit" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <RefreshCcw className="h-4 w-4" />
+                    )}
+                    {handoffLoading === "edit" ? t("detail.claiming") : t("detail.claim_edit")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    disabled={handoffLoading !== null}
+                    onClick={() => void claimCurrentHandoff("post")}
+                  >
+                    {handoffLoading === "post" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                    {handoffLoading === "post" ? t("detail.claiming") : t("detail.claim_post")}
+                  </Button>
+                  {handoffSuccess && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+                      {t("detail.claimed_success")}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs text-muted-foreground">
+                  {t("detail.no_permission_status")}
+                </div>
+              )}
+            </Section>
+
             <Section title={t("detail.status")}>
               {canEdit ? (
                 <div className="space-y-3">
@@ -362,6 +576,26 @@ export function TaskDetailModal({
                           ? t("detail.needs_edits_success")
                           : t("detail.rejected_success")}
                       </span>
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("detail.review_feedback")}
+                    </div>
+                    <Textarea
+                      rows={3}
+                      value={reviewFeedback}
+                      onChange={(event) => {
+                        setReviewFeedback(event.target.value);
+                        if (reviewError) setReviewError(null);
+                      }}
+                      placeholder={t("detail.review_feedback_placeholder")}
+                    />
+                  </div>
+                  {reviewError && (
+                    <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
+                      {reviewError}
                     </div>
                   )}
 
@@ -466,6 +700,20 @@ function Section({ title, children }: { title: React.ReactNode; children: React.
       <div className="text-sm font-bold text-foreground mb-2.5">{title}</div>
       {children}
     </section>
+  );
+}
+
+function SnapshotBlock({ title, value }: { title: string; value: string | null }) {
+  if (!value) return null;
+  return (
+    <div>
+      <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </div>
+      <p className="line-clamp-4 whitespace-pre-wrap text-xs leading-relaxed text-foreground">
+        {value}
+      </p>
+    </div>
   );
 }
 

@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/content-planner/ui/dialog";
+import { AssetCarousel } from "@/components/content-planner/asset-carousel";
 import { Input } from "@/components/content-planner/ui/input";
 import { Label } from "@/components/content-planner/ui/label";
 import { Textarea } from "@/components/content-planner/ui/textarea";
@@ -14,8 +15,11 @@ import { Select } from "@/components/content-planner/ui/select";
 import { Button } from "@/components/content-planner/ui/button";
 import { dayName, weekGroup } from "@/lib/content-planner/utils";
 import type { ContentTask } from "@/lib/content-planner/types";
+import { extractContentAssets } from "@/lib/content-planner/assets";
+import { convertImageToWebp, formatBytes } from "@/lib/content-planner/image-upload";
 import { useData } from "@/components/content-planner/data-provider";
 import { usePostOptions, useProgressOptions, useT } from "@/lib/content-planner/i18n";
+import { ImagePlus, Loader2, UploadCloud } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -53,6 +57,13 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
   const [form, setForm] = React.useState<Partial<ContentTask>>(empty);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [uploadingAssets, setUploadingAssets] = React.useState(false);
+  const [uploadStatus, setUploadStatus] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const assetPreview = React.useMemo(
+    () => extractContentAssets(form.file_url),
+    [form.file_url]
+  );
 
   React.useEffect(() => {
     if (open) {
@@ -61,7 +72,6 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
         setForm({ ...task });
       } else {
         const today = new Date().toISOString().slice(0, 10);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm({
           ...empty,
           start_date: today,
@@ -72,6 +82,7 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
         });
       }
       setError(null);
+      setUploadStatus(null);
     }
   }, [open, task, me?.id]);
 
@@ -105,6 +116,70 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
       setError(e.message ?? "Failed to save");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function appendAssetUrls(urls: string[]) {
+    setForm((current) => {
+      const existing = (current.file_url ?? "")
+        .split(/\s+/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const merged = Array.from(new Set([...existing, ...urls]));
+      return { ...current, file_url: merged.join("\n") };
+    });
+  }
+
+  async function uploadAssets(files: FileList | null) {
+    const selected = Array.from(files ?? []);
+    if (selected.length === 0) return;
+
+    setUploadingAssets(true);
+    setError(null);
+    setUploadStatus(t("modal.upload_converting"));
+
+    const uploadedUrls: string[] = [];
+    let originalBytes = 0;
+    let convertedBytes = 0;
+
+    try {
+      for (let i = 0; i < selected.length; i += 1) {
+        const file = selected[i];
+        setUploadStatus(t("modal.upload_progress", { current: i + 1, total: selected.length }));
+        const converted = await convertImageToWebp(file);
+        originalBytes += converted.originalSize;
+        convertedBytes += converted.convertedSize;
+
+        const body = new FormData();
+        body.append("file", converted.file);
+        body.append("originalName", converted.originalName);
+
+        const response = await fetch("/api/content-planner/upload-asset", {
+          method: "POST",
+          body,
+        });
+        const result = (await response.json().catch(() => ({}))) as {
+          publicUrl?: string;
+          error?: string;
+        };
+
+        if (!response.ok || !result.publicUrl) {
+          throw new Error(result.error ?? t("modal.upload_failed"));
+        }
+
+        uploadedUrls.push(result.publicUrl);
+      }
+
+      appendAssetUrls(uploadedUrls);
+      setUploadStatus(
+        `${t("modal.upload_success", { n: uploadedUrls.length })} (${formatBytes(originalBytes)} -> ${formatBytes(convertedBytes)})`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("modal.upload_failed"));
+      setUploadStatus(null);
+    } finally {
+      setUploadingAssets(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
@@ -261,11 +336,66 @@ export function TaskModal({ open, onOpenChange, task }: Props) {
           </div>
           <div className="md:col-span-2">
             <Label>{t("modal.file_url")}</Label>
-            <Input
+            <Textarea
+              rows={3}
               value={form.file_url ?? ""}
               onChange={(e) => set("file_url", e.target.value || null)}
-              placeholder="https://drive.google.com/…"
+              placeholder="https://..."
             />
+            <div className="mt-2 flex flex-col gap-2 rounded-lg border border-dashed border-violet-200 bg-violet-50/40 p-3 dark:border-violet-400/20 dark:bg-violet-500/5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2">
+                <div className="mt-0.5 grid h-8 w-8 place-items-center rounded-lg bg-white text-violet-600 shadow-sm dark:bg-white/10 dark:text-violet-300">
+                  <ImagePlus className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-extrabold text-foreground">
+                    {t("modal.upload_assets_title")}
+                  </div>
+                  <div className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
+                    {t("modal.upload_assets_hint")}
+                  </div>
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(event) => void uploadAssets(event.target.files)}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={uploadingAssets || saving}
+                onClick={() => fileInputRef.current?.click()}
+                className="shrink-0"
+              >
+                {uploadingAssets ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <UploadCloud className="h-4 w-4" />
+                )}
+                {uploadingAssets ? t("modal.uploading") : t("modal.upload_images")}
+              </Button>
+            </div>
+            {uploadStatus && (
+              <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+                {uploadStatus}
+              </div>
+            )}
+            {assetPreview.length > 0 && (
+              <div className="mt-3">
+                <AssetCarousel
+                  assets={assetPreview}
+                  emptyText={t("review.no_assets")}
+                  openLabel={t("common.open")}
+                  unavailableText={t("common.preview_unavailable")}
+                  compact
+                />
+              </div>
+            )}
           </div>
           <div className="md:col-span-2">
             <div className="text-xs font-semibold text-foreground mb-2 mt-1">
