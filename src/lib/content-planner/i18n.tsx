@@ -33,6 +33,9 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "common.no_value": "—",
     "common.language": "ภาษา",
     "common.preview_unavailable": "ยังดูตัวอย่างไม่ได้",
+    "dev.role": "Dev role",
+    "dev.role_switch": "สลับ role เฉพาะโหมด Dev",
+    "dev.real_role": "จริง: {role}",
 
     // sidebar
     "sidebar.app_name": "Content Planner",
@@ -294,6 +297,9 @@ const TRANSLATIONS: Record<Lang, Dict> = {
     "common.no_value": "—",
     "common.language": "Language",
     "common.preview_unavailable": "Preview unavailable",
+    "dev.role": "Dev role",
+    "dev.role_switch": "Switch role in development only",
+    "dev.real_role": "Real: {role}",
 
     "sidebar.app_name": "Content Planner",
     "sidebar.tagline": "Marketing workspace",

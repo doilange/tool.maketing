@@ -1,14 +1,24 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import { LogOut, Languages, Sun, Moon } from "lucide-react";
+import { Code2, LogOut, Languages, Sun, Moon } from "lucide-react";
 import { initials } from "@/lib/content-planner/utils";
 import { useData } from "@/components/content-planner/data-provider";
 import { Button } from "@/components/content-planner/ui/button";
 import { useT, useLang } from "@/lib/content-planner/i18n";
 import { useTheme } from "next-themes";
+import type { UserRole } from "@/lib/content-planner/types";
+
+const DEV_ROLE_OPTIONS: UserRole[] = ["admin", "manager", "creator", "viewer"];
 
 export function Topbar() {
-  const { me, signOut } = useData();
+  const {
+    me,
+    realRole,
+    devRoleOverride,
+    isDevRoleSwitchEnabled,
+    setDevRoleOverride,
+    signOut,
+  } = useData();
   const t = useT();
   const { lang, setLang } = useLang();
   const { theme, setTheme } = useTheme();
@@ -54,6 +64,33 @@ export function Topbar() {
               <Moon className="h-3.5 w-3.5 text-violet-500" />
             )}
           </button>
+        )}
+
+        {mounted && isDevRoleSwitchEnabled && (
+          <label
+            className="hidden min-h-10 items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-2.5 text-xs font-semibold text-amber-800 shadow-sm dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-200 md:flex"
+            title={t("dev.role_switch")}
+          >
+            <Code2 className="h-3.5 w-3.5" />
+            <span>{t("dev.role")}</span>
+            <select
+              value={devRoleOverride ?? ""}
+              onChange={(event) => {
+                const value = event.target.value;
+                setDevRoleOverride(value ? (value as UserRole) : null);
+              }}
+              className="h-7 rounded-md border border-amber-200 bg-white px-2 text-xs font-bold text-foreground outline-none transition-colors focus:border-amber-400 focus:ring-2 focus:ring-amber-300/30 dark:border-amber-400/20 dark:bg-[#111827]"
+            >
+              <option value="">
+                {t("dev.real_role", { role: roleLabel(realRole ?? me?.role) })}
+              </option>
+              {DEV_ROLE_OPTIONS.map((role) => (
+                <option key={role} value={role}>
+                  {roleLabel(role)}
+                </option>
+              ))}
+            </select>
+          </label>
         )}
 
         <div className="hidden h-5 w-px self-center bg-slate-200 dark:bg-white/10 sm:block" />

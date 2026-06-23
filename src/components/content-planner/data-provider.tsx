@@ -7,6 +7,7 @@ import type {
   Platform,
   Product,
   Profile,
+  UserRole,
 } from "@/lib/content-planner/types";
 import { createClient } from "@/lib/content-planner/supabase/client";
 import {
@@ -26,6 +27,10 @@ type DataContextValue = {
   comments: Comment[];
   activity: ActivityLog[];
   me: Profile | null;
+  realRole: UserRole | null;
+  devRoleOverride: UserRole | null;
+  isDevRoleSwitchEnabled: boolean;
+  setDevRoleOverride: (role: UserRole | null) => void;
   addTask: (task: Partial<ContentTask>) => Promise<ContentTask | null>;
   updateTask: (id: string, patch: Partial<ContentTask>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
@@ -43,6 +48,19 @@ type DataContextValue = {
 const DataContext = React.createContext<DataContextValue | null>(null);
 const CLEANUP_LAST_RUN_KEY = "content-planner-cleanup-last-run";
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const DEV_ROLE_OVERRIDE_KEY = "content-planner-dev-role-override";
+const DEV_ROLE_SWITCH_ENABLED = process.env.NODE_ENV === "development";
+const USER_ROLES: UserRole[] = ["admin", "manager", "creator", "viewer"];
+
+function isUserRole(value: unknown): value is UserRole {
+  return typeof value === "string" && USER_ROLES.includes(value as UserRole);
+}
+
+function getInitialDevRoleOverride(): UserRole | null {
+  if (!DEV_ROLE_SWITCH_ENABLED || typeof window === "undefined") return null;
+  const stored = window.localStorage.getItem(DEV_ROLE_OVERRIDE_KEY);
+  return isUserRole(stored) ? stored : null;
+}
 
 function realtimeRowId(value: unknown) {
   if (!value || typeof value !== "object" || !("id" in value)) return undefined;
@@ -67,6 +85,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [comments, setComments] = React.useState<Comment[]>([]);
   const [activity, setActivity] = React.useState<ActivityLog[]>([]);
   const [meId, setMeId] = React.useState<string | null>(null);
+  const [devRoleOverride, setDevRoleOverrideState] = React.useState<UserRole | null>(
+    getInitialDevRoleOverride
+  );
 
   // ---------------- Initial fetch ----------------
   React.useEffect(() => {
@@ -222,10 +243,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [meId]);
 
-  const me = React.useMemo(
+  const realMe = React.useMemo(
     () => profiles.find((p) => p.id === meId) ?? null,
     [profiles, meId]
   );
+  const me = React.useMemo(() => {
+    if (!realMe) return null;
+    if (!DEV_ROLE_SWITCH_ENABLED || !devRoleOverride) return realMe;
+    return { ...realMe, role: devRoleOverride };
+  }, [devRoleOverride, realMe]);
+
+  const setDevRoleOverride = React.useCallback((role: UserRole | null) => {
+    if (!DEV_ROLE_SWITCH_ENABLED) return;
+    setDevRoleOverrideState(role);
+    if (role) {
+      window.localStorage.setItem(DEV_ROLE_OVERRIDE_KEY, role);
+    } else {
+      window.localStorage.removeItem(DEV_ROLE_OVERRIDE_KEY);
+    }
+  }, []);
 
   // ---------------- Mutations ----------------
   const logActivity = React.useCallback(
@@ -485,6 +521,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     comments,
     activity,
     me,
+    realRole: realMe?.role ?? null,
+    devRoleOverride,
+    isDevRoleSwitchEnabled: DEV_ROLE_SWITCH_ENABLED,
+    setDevRoleOverride,
     addTask,
     updateTask,
     deleteTask,

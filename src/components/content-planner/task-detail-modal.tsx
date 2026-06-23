@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/content-planner/ui/dialog";
 import { AssetCarousel } from "@/components/content-planner/asset-carousel";
+import { TaskModal } from "@/components/content-planner/task-modal";
 import { Button } from "@/components/content-planner/ui/button";
 import { Textarea } from "@/components/content-planner/ui/textarea";
 import { Select } from "@/components/content-planner/ui/select";
@@ -27,7 +28,7 @@ import {
 import { extractContentAssets } from "@/lib/content-planner/assets";
 import { getReviewSubmissions, type HandoffPurpose } from "@/lib/content-planner/review";
 import { formatDate, formatDateTime, initials } from "@/lib/content-planner/utils";
-import { Check, MessageCircle, X, RefreshCcw, Activity, ExternalLink, Loader2, CheckCircle2, Send, Handshake, FileCheck2 } from "lucide-react";
+import { Check, MessageCircle, X, RefreshCcw, Activity, ExternalLink, Loader2, CheckCircle2, Send, Handshake, FileCheck2, Pencil } from "lucide-react";
 
 export function TaskDetailModal({
   open,
@@ -56,6 +57,7 @@ export function TaskDetailModal({
   const [reviewSuccess, setReviewSuccess] = React.useState(false);
   const [handoffLoading, setHandoffLoading] = React.useState<HandoffPurpose | null>(null);
   const [handoffSuccess, setHandoffSuccess] = React.useState(false);
+  const [editingTask, setEditingTask] = React.useState(false);
 
   const task = React.useMemo(() => {
     if (!initialTask) return null;
@@ -81,6 +83,7 @@ export function TaskDetailModal({
   const product = products.find((p) => p.name === task.product);
   const platform = platforms.find((p) => p.name === task.platform);
   const isManager = me?.role === "admin" || me?.role === "manager";
+  const canEditTask = me?.role === "creator" || me?.role === "manager";
 
   async function postComment() {
     if (!text.trim() || !me || !task) return;
@@ -180,9 +183,28 @@ export function TaskDetailModal({
   const reviewAssets = extractContentAssets(latestReview?.snapshot.file_url, task.file_url);
   const firstAsset = reviewAssets[0];
 
+  function handleDetailOpenChange(nextOpen: boolean) {
+    if (!nextOpen) setEditingTask(false);
+    onOpenChange(nextOpen);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+    <>
+      <Dialog open={open} onOpenChange={handleDetailOpenChange}>
+        <DialogContent className="max-w-4xl">
+          {canEditTask && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-12 top-4 h-8 w-8"
+              onClick={() => setEditingTask(true)}
+              aria-label={t("common.edit")}
+              title={t("common.edit")}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
         <DialogHeader>
           <DialogTitle className="pr-8 leading-tight">{task.topic}</DialogTitle>
           <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -678,8 +700,10 @@ export function TaskDetailModal({
             </Section>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      <TaskModal open={editingTask} onOpenChange={setEditingTask} task={task} />
+    </>
   );
 }
 
