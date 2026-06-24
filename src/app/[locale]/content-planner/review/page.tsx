@@ -133,6 +133,8 @@ export default function ReviewPage() {
                   assets={assets}
                   emptyText={t("review.no_assets")}
                   openLabel={t("common.open")}
+                  downloadLabel={t("common.download")}
+                  downloadingLabel={t("common.downloading")}
                   unavailableText={t("common.preview_unavailable")}
                   compact
                 />

@@ -6,9 +6,11 @@ import type { ContentAsset } from "@/lib/content-planner/assets";
 import {
   ChevronLeft,
   ChevronRight,
+  Download,
   ExternalLink,
   Image as ImageIcon,
   Images,
+  Loader2,
 } from "lucide-react";
 
 type CarouselState = {
@@ -19,12 +21,35 @@ type CarouselState = {
 
 const emptyFailed = new Set<string>();
 
+function extensionFromContentType(contentType: string) {
+  if (contentType.includes("webp")) return "webp";
+  if (contentType.includes("png")) return "png";
+  if (contentType.includes("jpeg") || contentType.includes("jpg")) return "jpg";
+  if (contentType.includes("gif")) return "gif";
+  if (contentType.includes("avif")) return "avif";
+  return "jpg";
+}
+
+function safeDownloadName(asset: ContentAsset, contentType: string) {
+  const extension = extensionFromContentType(contentType);
+  const rawName = asset.label || "content-asset";
+  const baseName =
+    rawName
+      .replace(/\.[a-z0-9]{2,5}$/i, "")
+      .replace(/[^a-zA-Z0-9ก-๙_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "content-asset";
+  return `${baseName}.${extension}`;
+}
+
 export function AssetCarousel({
   assets,
   emptyText,
   className,
   compact = false,
   openLabel = "Open",
+  downloadLabel = "Download",
+  downloadingLabel = "Downloading",
   unavailableText = "Preview unavailable",
 }: {
   assets: ContentAsset[];
@@ -32,6 +57,8 @@ export function AssetCarousel({
   className?: string;
   compact?: boolean;
   openLabel?: string;
+  downloadLabel?: string;
+  downloadingLabel?: string;
   unavailableText?: string;
 }) {
   const assetKey = React.useMemo(
@@ -49,7 +76,9 @@ export function AssetCarousel({
   const failed = isFreshState ? state.failed : emptyFailed;
   const asset = assets[index];
   const canGo = assets.length > 1;
+  const canDownload = asset?.kind === "image";
   const hasPreview = asset?.previewUrl && !failed.has(asset.previewUrl);
+  const [downloadingUrl, setDownloadingUrl] = React.useState<string | null>(null);
 
   function move(delta: number) {
     if (!assets.length) return;
@@ -61,6 +90,29 @@ export function AssetCarousel({
         failed: current.assetKey === assetKey ? current.failed : new Set(),
       };
     });
+  }
+
+  async function downloadAsset(target: ContentAsset) {
+    const downloadUrl = target.previewUrl ?? target.originalUrl;
+    setDownloadingUrl(target.originalUrl);
+
+    try {
+      const response = await fetch(downloadUrl);
+      if (!response.ok) throw new Error("Download failed");
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = safeDownloadName(target, blob.type || "image/jpeg");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    } catch {
+      window.open(target.originalUrl, "_blank", "noopener,noreferrer");
+    } finally {
+      setDownloadingUrl(null);
+    }
   }
 
   return (
@@ -100,15 +152,37 @@ export function AssetCarousel({
               {index + 1}/{assets.length}
             </div>
 
-            <a
-              href={asset.originalUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="absolute right-3 top-3 inline-flex min-h-8 items-center gap-1.5 rounded-full bg-black/55 px-3 text-[11px] font-bold text-white backdrop-blur transition-colors hover:bg-black/75"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              {openLabel}
-            </a>
+            <div className="absolute right-3 top-3 flex items-center gap-2">
+              {canDownload && (
+                <button
+                  type="button"
+                  onClick={() => void downloadAsset(asset)}
+                  disabled={downloadingUrl === asset.originalUrl}
+                  className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-black/55 px-3 text-[11px] font-bold text-white backdrop-blur transition-colors hover:bg-black/75 disabled:cursor-wait disabled:opacity-70"
+                  title={downloadLabel}
+                  aria-label={downloadLabel}
+                >
+                  {downloadingUrl === asset.originalUrl ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {downloadingUrl === asset.originalUrl ? downloadingLabel : downloadLabel}
+                  </span>
+                </button>
+              )}
+              <a
+                href={asset.originalUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-8 items-center gap-1.5 rounded-full bg-black/55 px-3 text-[11px] font-bold text-white backdrop-blur transition-colors hover:bg-black/75"
+                title={openLabel}
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{openLabel}</span>
+              </a>
+            </div>
 
             {canGo && (
               <>
