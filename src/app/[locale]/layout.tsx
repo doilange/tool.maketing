@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "../globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
@@ -10,8 +9,6 @@ import { routing } from "@/i18n/routing";
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "MT Content Planner - Content & Marketing Management",
@@ -31,7 +28,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col bg-background text-foreground`}>
+      <body className="min-h-screen flex flex-col bg-background text-foreground">
         <NextIntlClientProvider messages={messages} locale={locale}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem enableColorScheme={false} disableTransitionOnChange>
             <Navbar />
