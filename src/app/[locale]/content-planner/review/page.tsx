@@ -6,6 +6,15 @@ import { TaskDetailModal } from "@/components/content-planner/task-detail-modal"
 import { Button } from "@/components/content-planner/ui/button";
 import { Card, CardContent } from "@/components/content-planner/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/content-planner/ui/dialog";
+import { Textarea } from "@/components/content-planner/ui/textarea";
+import {
   ApprovalBadge,
   ColorTag,
   PostBadge,
@@ -17,10 +26,12 @@ import { formatDate, formatDateTime, initials } from "@/lib/content-planner/util
 import { getLatestReviewSubmission } from "@/lib/content-planner/review";
 import type { ContentTask } from "@/lib/content-planner/types";
 import {
+  Check,
   CheckCircle2,
   Clock3,
   ExternalLink,
   FileCheck2,
+  Loader2,
   RefreshCcw,
 } from "lucide-react";
 
@@ -35,10 +46,77 @@ const FILTERS: { key: ReviewFilter; labelKey: string }[] = [
 ];
 
 export default function ReviewPage() {
-  const { tasks, profiles, products, platforms, activity } = useData();
+  const {
+    tasks,
+    profiles,
+    products,
+    platforms,
+    activity,
+    me,
+    addComment,
+    setApproval,
+  } = useData();
   const t = useT();
   const [filter, setFilter] = React.useState<ReviewFilter>("pending");
   const [detail, setDetail] = React.useState<ContentTask | null>(null);
+  const [feedbackTaskId, setFeedbackTaskId] = React.useState<string | null>(null);
+  const [feedback, setFeedback] = React.useState("");
+  const [actionTaskId, setActionTaskId] = React.useState<string | null>(null);
+  const [actionError, setActionError] = React.useState<{ taskId: string; message: string } | null>(
+    null
+  );
+  const isManager = me?.role === "admin" || me?.role === "manager";
+
+  async function approveTask(taskId: string) {
+    if (actionTaskId) return;
+    setActionTaskId(taskId);
+    setActionError(null);
+    try {
+      await setApproval(taskId, "approved", "ready_to_post");
+    } catch (error) {
+      setActionError({
+        taskId,
+        message: error instanceof Error ? error.message : t("planner.update_failed"),
+      });
+    } finally {
+      setActionTaskId(null);
+    }
+  }
+
+  async function requestTaskEdits(taskId: string) {
+    const message = feedback.trim();
+    if (actionTaskId) return;
+    setActionTaskId(taskId);
+    setActionError(null);
+    try {
+      await setApproval(taskId, "needs_edits", "editing");
+      if (message) {
+        await addComment(taskId, message);
+      }
+      setFeedback("");
+      setFeedbackTaskId(null);
+    } catch (error) {
+      setActionError({
+        taskId,
+        message: error instanceof Error ? error.message : t("planner.update_failed"),
+      });
+    } finally {
+      setActionTaskId(null);
+    }
+  }
+
+  function openFeedback(taskId: string) {
+    setFeedbackTaskId(taskId);
+    setFeedback("");
+    setActionError(null);
+  }
+
+  function closeFeedback() {
+    if (actionTaskId) return;
+    setFeedbackTaskId(null);
+    setFeedback("");
+    setActionError(null);
+  }
 
   const taskActivity = React.useMemo(() => {
     const map = new Map<string, typeof activity>();
@@ -68,6 +146,13 @@ export default function ReviewPage() {
     }),
     [tasks]
   );
+  const feedbackTask = React.useMemo(
+    () => tasks.find((task) => task.id === feedbackTaskId) ?? null,
+    [feedbackTaskId, tasks]
+  );
+  const feedbackError =
+    feedbackTaskId && actionError?.taskId === feedbackTaskId ? actionError.message : null;
+  const isFeedbackSaving = feedbackTaskId !== null && actionTaskId === feedbackTaskId;
 
   return (
     <div className="space-y-5">
@@ -123,6 +208,12 @@ export default function ReviewPage() {
             const platform = platforms.find((item) => item.name === task.platform);
             const snapshot = submission?.snapshot;
             const assets = extractContentAssets(snapshot?.file_url, task.file_url);
+            const canReviewInline =
+              isManager &&
+              task.approval_status === "pending" &&
+              task.progress_status === "waiting_comment";
+            const isSaving = actionTaskId === task.id;
+            const taskError = actionError?.taskId === task.id ? actionError.message : null;
 
             return (
               <article
@@ -194,6 +285,56 @@ export default function ReviewPage() {
                     )}
                   </div>
 
+                  {canReviewInline && (
+                    <div className="mt-4 border-t border-slate-100 pt-4 dark:border-white/10">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-xs font-extrabold text-foreground">
+                            {t("review.manager_decision")}
+                          </div>
+                          <div className="mt-0.5 text-[11px] text-muted-foreground">
+                            {t("review.manager_decision_hint")}
+                          </div>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-700 ring-1 ring-inset ring-violet-200 dark:bg-violet-500/10 dark:text-violet-200 dark:ring-violet-400/20">
+                          {t("review.manager_only")}
+                        </span>
+                      </div>
+
+                      {taskError && (
+                        <div
+                          role="alert"
+                          className="mb-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300"
+                        >
+                          {taskError}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isSaving || actionTaskId !== null}
+                          onClick={() => openFeedback(task.id)}
+                        >
+                          <RefreshCcw className="h-3.5 w-3.5" />
+                          {t("detail.request_edits")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={isSaving || actionTaskId !== null}
+                          onClick={() => void approveTask(task.id)}
+                        >
+                          {isSaving ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Check className="h-3.5 w-3.5" />
+                          )}
+                          {isSaving ? t("detail.approving") : t("detail.approve")}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
                     {assets[0] && (
                       <Button variant="outline" size="sm" asChild>
@@ -212,6 +353,63 @@ export default function ReviewPage() {
           })}
         </div>
       )}
+
+      <Dialog open={feedbackTaskId !== null} onOpenChange={(open) => !open && closeFeedback()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("review.request_edits_title")}</DialogTitle>
+            <DialogDescription>{t("review.request_edits_description")}</DialogDescription>
+          </DialogHeader>
+          {feedbackTask && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 text-sm font-bold leading-snug text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-slate-50">
+              {feedbackTask.topic}
+            </div>
+          )}
+          <div>
+            <div className="mb-1 text-xs font-bold text-foreground">
+              {t("review.optional_feedback")}
+            </div>
+            <Textarea
+              rows={4}
+              autoFocus
+              value={feedback}
+              disabled={isFeedbackSaving}
+              onChange={(event) => {
+                setFeedback(event.target.value);
+                if (feedbackError) setActionError(null);
+              }}
+              placeholder={t("detail.review_feedback_placeholder")}
+              className="min-h-[120px] resize-y"
+            />
+            <p className="mt-2 text-xs text-muted-foreground">{t("review.optional_feedback_hint")}</p>
+          </div>
+          {feedbackError && (
+            <div
+              role="alert"
+              className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300"
+            >
+              {feedbackError}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" disabled={isFeedbackSaving} onClick={closeFeedback}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              variant="outline"
+              disabled={!feedbackTaskId || isFeedbackSaving}
+              onClick={() => feedbackTaskId && void requestTaskEdits(feedbackTaskId)}
+            >
+              {isFeedbackSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCcw className="h-4 w-4" />
+              )}
+              {isFeedbackSaving ? t("detail.approving") : t("review.confirm_request_edits")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <TaskDetailModal open={!!detail} onOpenChange={(open) => !open && setDetail(null)} task={detail} />
     </div>
