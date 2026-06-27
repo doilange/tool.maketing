@@ -1,6 +1,7 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import { Code2, LogOut, Languages, Sun, Moon } from "lucide-react";
+import { Code2, LogOut, Languages, Sun, Moon, Wrench } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { initials } from "@/lib/content-planner/utils";
 import { useData } from "@/components/content-planner/data-provider";
 import { Button } from "@/components/content-planner/ui/button";
@@ -41,6 +42,13 @@ export function Topbar() {
       </div>
       
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <Button variant="outline" size="sm" asChild title={t("common.tools")}>
+          <Link href="/tool">
+            <Wrench className="h-3.5 w-3.5" />
+            <span className="hidden lg:inline">{t("common.tools")}</span>
+          </Link>
+        </Button>
+
         {/* Language Toggler */}
         <button
           onClick={toggleLanguage}

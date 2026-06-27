@@ -1,6 +1,6 @@
 "use client";
 import { useState, useSyncExternalStore } from "react";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
 import { createClient } from "@/lib/content-planner/supabase/client";
 import { Button } from "@/components/content-planner/ui/button";
 import { Input } from "@/components/content-planner/ui/input";
@@ -19,6 +19,8 @@ import {
   Languages,
   Sun,
   Moon,
+  LayoutDashboard,
+  Wrench,
 } from "lucide-react";
 
 export default function LoginPage() {
@@ -74,6 +76,25 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-[100svh] w-full items-center justify-center overflow-x-hidden px-4 py-20 planner-theme sm:p-6">
+      <nav className="absolute left-4 top-4 z-20 flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-[#111827]">
+        <Link
+          href="/content-planner/login"
+          className="flex h-9 items-center gap-1.5 rounded-md bg-slate-900 px-3 text-xs font-semibold text-white transition-colors dark:bg-white dark:text-slate-950"
+          aria-current="page"
+        >
+          <LayoutDashboard className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">{t("common.content_planner")}</span>
+          <span className="sm:hidden">Planner</span>
+        </Link>
+        <Link
+          href="/tool"
+          className="flex h-9 items-center gap-1.5 rounded-md px-3 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-slate-50"
+        >
+          <Wrench className="h-3.5 w-3.5" />
+          <span>{t("common.tools")}</span>
+        </Link>
+      </nav>
+
       <div className="absolute right-4 top-4 z-20 flex items-center space-x-2">
         <button
           onClick={toggleLanguage}

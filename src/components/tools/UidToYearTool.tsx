@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Copy, Trash2, Check, Calendar, Info, Sparkles } from "lucide-react";
+import { Copy, Trash2, Check, Calendar, Info, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 // Facebook UID ranges based on known data
@@ -126,103 +126,98 @@ export default function UidToYearTool() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 select-none max-w-5xl space-y-6">
-      {/* Title */}
+    <div className="mx-auto max-w-6xl select-none space-y-5">
       <div>
-        <h2 className="text-3xl font-extrabold flex items-center mb-2 bg-clip-text text-transparent bg-brand-gradient dark:from-white dark:to-slate-300">
-          <Calendar className="w-8 h-8 mr-3 text-violet-500 dark:text-violet-400 animate-pulse-soft" />
+        <h2 className="mb-2 flex items-center text-2xl font-extrabold tracking-tight text-slate-950 dark:text-slate-50">
+          <span className="mr-3 grid h-10 w-10 place-items-center rounded-lg bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-400/20">
+            <Calendar className="h-5 w-5" />
+          </span>
           {t("title")}
         </h2>
-        <p className="text-muted-foreground text-sm">{t("desc")}</p>
+        <p className="max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">{t("desc")}</p>
       </div>
 
-      {/* Control Row */}
-      <div className="flex flex-wrap gap-4 items-center justify-between bg-white/40 dark:bg-[#0a1128]/45 p-4 rounded-2xl border border-white/10 dark:border-white/5 shadow-sm">
-        <span className="text-xs font-bold text-muted-foreground pl-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#111827]">
+        <span className="pl-1 text-xs font-bold text-slate-500 dark:text-slate-400">
           {input.split('\n').filter(line => line.trim() !== '').length} UIDs detected
         </span>
         <button
           onClick={processUids}
-          className="flex items-center bg-brand-gradient text-white hover:opacity-90 px-6 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-md shadow-violet-500/15 h-9 cursor-pointer ml-auto"
+          className="ml-auto flex h-9 cursor-pointer items-center rounded-lg border border-blue-600 bg-blue-600 px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-blue-700 active:scale-[0.99]"
         >
-          <Sparkles className="w-4 h-4 mr-2" /> {t("analyzeBtn")}
+          <Search className="mr-2 h-4 w-4" /> {t("analyzeBtn")}
         </button>
       </div>
 
-      {/* Stats Summary */}
       {Object.keys(stats).length > 0 && (
-        <div className="bg-white/40 dark:bg-[#0a1128]/45 border border-white/10 dark:border-white/5 rounded-2xl p-5 shadow-sm space-y-3">
-          <p className="text-xs font-extrabold text-foreground/80 flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+        <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#111827]">
+          <p className="flex items-center gap-2 text-xs font-extrabold text-slate-700 dark:text-slate-200">
+            <span className="inline-block h-2 w-2 rounded-full bg-blue-600" />
             {t("statsSummary")}
           </p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(stats).sort().map(([year, count]) => (
               <span
                 key={year}
-                className="bg-white/60 dark:bg-[#131a30]/60 border border-white/20 dark:border-white/5 px-3.5 py-1.5 rounded-full text-[11px] font-bold text-muted-foreground shadow-sm flex items-center space-x-1.5 transition-all hover:scale-105"
+                className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
               >
                 <span>{year}:</span>
-                <span className="text-transparent bg-clip-text bg-brand-gradient dark:from-violet-400 dark:to-fuchsia-400 font-extrabold">{count}</span>
+                <span className="font-extrabold text-blue-700 dark:text-blue-300">{count}</span>
               </span>
             ))}
           </div>
         </div>
       )}
 
-      {/* Editor Panel Card */}
-      <div className="relative group/panel transition-all duration-300">
-        <div className="absolute inset-0 bg-brand-gradient opacity-5 dark:opacity-10 blur-2xl rounded-3xl scale-[1.01] pointer-events-none" />
-        <div className="absolute inset-0 bg-brand-gradient opacity-15 dark:opacity-25 rounded-3xl p-[1px] pointer-events-none" />
-        <div className="relative bg-white/70 dark:bg-[#131a30]/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-2xl rounded-3xl p-6 overflow-hidden">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Input Box */}
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#111827]">
+        <div className="grid grid-cols-1 gap-0 md:grid-cols-2">
+          <div className="border-b border-slate-200 p-4 dark:border-white/10 md:border-b-0 md:border-r">
             <div className="space-y-2">
               <div className="flex items-center justify-between px-1">
-                <label className="text-xs font-extrabold text-foreground">{t("input")}</label>
+                <label className="text-xs font-extrabold text-slate-900 dark:text-slate-100">{t("input")}</label>
                 <button
                   onClick={() => { setInput(""); setStats({}); }}
-                  className="text-[11px] font-bold flex items-center text-muted-foreground/80 hover:text-rose-500 transition-colors cursor-pointer"
+                  className="flex cursor-pointer items-center text-[11px] font-bold text-slate-500 transition-colors hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-300"
                 >
-                  <Trash2 className="w-3.5 h-3.5 mr-1" /> {t("clear")}
+                  <Trash2 className="mr-1 h-3.5 w-3.5" /> {t("clear")}
                 </button>
               </div>
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="w-full h-96 p-4 bg-white/40 dark:bg-[#0a1128]/45 border border-border/80 dark:border-white/10 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10 transition-all rounded-2xl text-foreground font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-muted-foreground/30"
+                className="h-[420px] w-full resize-none rounded-lg border border-slate-200 bg-white p-4 font-mono text-sm leading-relaxed text-slate-950 transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/15 dark:border-white/10 dark:bg-[#0b1020] dark:text-slate-50 dark:placeholder:text-slate-600"
                 placeholder={t("placeholder")}
               />
             </div>
+          </div>
 
-            {/* Output Box */}
+          <div className="p-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between px-1">
-                <label className="text-xs font-extrabold text-foreground">{t("output")}</label>
-                <div className="flex space-x-3.5">
+                <label className="text-xs font-extrabold text-slate-900 dark:text-slate-100">{t("output")}</label>
+                <div className="flex gap-3.5">
                   <button
                     onClick={copyToClipboard}
                     disabled={!output}
-                    className={`text-[11px] font-bold flex items-center transition-colors disabled:opacity-40 disabled:pointer-events-none cursor-pointer ${
-                      copied ? "text-emerald-500 hover:text-emerald-600" : "text-violet-500 hover:text-violet-600"
+                    className={`flex cursor-pointer items-center text-[11px] font-bold transition-colors disabled:pointer-events-none disabled:opacity-40 ${
+                      copied ? "text-emerald-600 hover:text-emerald-700 dark:text-emerald-300" : "text-blue-700 hover:text-blue-800 dark:text-blue-300 dark:hover:text-blue-200"
                     }`}
                   >
-                    {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                    {copied ? <Check className="mr-1 h-3.5 w-3.5" /> : <Copy className="mr-1 h-3.5 w-3.5" />}
                     {copied ? t("copied") : t("copy")}
                   </button>
                   <button
                     onClick={() => setOutput("")}
-                    className="text-[11px] font-bold flex items-center text-muted-foreground/80 hover:text-rose-500 transition-colors cursor-pointer"
+                    className="flex cursor-pointer items-center text-[11px] font-bold text-slate-500 transition-colors hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-300"
                   >
-                    <Trash2 className="w-3.5 h-3.5 mr-1" /> {t("clear")}
+                    <Trash2 className="mr-1 h-3.5 w-3.5" /> {t("clear")}
                   </button>
                 </div>
               </div>
               <textarea
                 value={output}
                 readOnly
-                className="w-full h-96 p-4 bg-violet-500/5 dark:bg-[#0a1128]/25 border border-border/80 dark:border-white/10 rounded-2xl text-foreground font-mono text-sm leading-relaxed resize-none focus:outline-none placeholder:text-muted-foreground/20"
+                className="h-[420px] w-full resize-none rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-sm leading-relaxed text-slate-950 placeholder:text-slate-400 focus:outline-none dark:border-white/10 dark:bg-[#0b1020] dark:text-slate-50 dark:placeholder:text-slate-600"
                 placeholder={t("output")}
               />
             </div>
@@ -230,17 +225,13 @@ export default function UidToYearTool() {
         </div>
       </div>
 
-      {/* Info box */}
-      <div className="relative group/info overflow-hidden">
-        <div className="absolute inset-0 bg-amber-500/5 dark:bg-amber-500/10 backdrop-blur-md rounded-2xl pointer-events-none" />
-        <div className="relative p-5 border border-amber-500/20 rounded-2xl text-amber-700 dark:text-amber-300 flex items-start gap-3.5 shadow-sm">
-          <Info className="w-5 h-5 text-amber-500 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-          <div className="space-y-1">
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">{t("note")}</h4>
-            <p className="text-xs leading-relaxed opacity-85 font-medium">
-              {t("noteDesc")}
-            </p>
-          </div>
+      <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900 shadow-sm dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-200">
+        <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-300" />
+        <div className="space-y-1">
+          <h4 className="text-xs font-extrabold uppercase tracking-wide">{t("note")}</h4>
+          <p className="text-xs font-medium leading-6">
+            {t("noteDesc")}
+          </p>
         </div>
       </div>
     </div>

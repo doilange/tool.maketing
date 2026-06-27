@@ -97,8 +97,8 @@
    ========================================== */
 .planner-theme {
   background:
-    radial-gradient(900px 520px at 100% 0%, rgba(236, 72, 153, 0.08) 0%, transparent 58%),
-    radial-gradient(760px 480px at 0% 100%, rgba(59, 130, 246, 0.08) 0%, transparent 58%),
+    radial-gradient(900px 520px at 100% 0%, rgba(37, 99, 235, 0.07) 0%, transparent 58%),
+    radial-gradient(760px 480px at 0% 100%, rgba(15, 118, 110, 0.06) 0%, transparent 58%),
     linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
   background-attachment: fixed;
   color: var(--foreground);
@@ -106,26 +106,26 @@
 
 .dark .planner-theme {
   background:
-    radial-gradient(900px 620px at 100% 0%, rgba(139, 92, 246, 0.16) 0%, transparent 62%),
-    radial-gradient(760px 500px at 0% 100%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+    radial-gradient(900px 620px at 100% 0%, rgba(37, 99, 235, 0.14) 0%, transparent 62%),
+    radial-gradient(760px 500px at 0% 100%, rgba(20, 184, 166, 0.08) 0%, transparent 60%),
     linear-gradient(180deg, #0b1120 0%, #050816 100%);
 }
 
 /* Content Planner gradient utilities (Tailwind v4 compatible) */
 @utility bg-brand-gradient {
-  background-image: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 35%, #ec4899 65%, #f97316 100%);
+  background-image: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 @utility bg-brand-soft {
-  background-image: linear-gradient(135deg, #f5ecff 0%, #fde6f3 40%, #ffeede 100%);
+  background-image: linear-gradient(135deg, #f8fafc 0%, #eff6ff 55%, #f0fdfa 100%);
 }
 
 @utility bg-pink-gradient {
-  background-image: linear-gradient(135deg, #f5ecff 0%, #fde6f3 40%, #ffeede 100%);
+  background-image: linear-gradient(135deg, #f8fafc 0%, #eff6ff 55%, #f0fdfa 100%);
 }
 
 @utility bg-pink-gradient-strong {
-  background-image: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 35%, #ec4899 65%, #f97316 100%);
+  background-image: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 /* Beautiful Modern Custom Scrollbars */
@@ -139,29 +139,29 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.25); /* Sleek translucent violet */
+  background: rgba(37, 99, 235, 0.24);
   border-radius: 8px;
   border: 1px solid transparent;
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.5); /* Slightly darker on hover */
+  background: rgba(37, 99, 235, 0.46);
 }
 
 /* Dark Mode Scrollbars */
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.3);
+  background: rgba(59, 130, 246, 0.34);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.55);
+  background: rgba(59, 130, 246, 0.58);
 }
 
 /* Firefox compatibility */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.25) transparent;
+  scrollbar-color: rgba(37, 99, 235, 0.28) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

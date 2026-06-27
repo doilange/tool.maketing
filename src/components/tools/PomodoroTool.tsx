@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Play, Pause, RotateCcw, Coffee, Briefcase, SkipForward, Volume2, VolumeX, Timer } from "lucide-react";
+import { Play, Pause, RotateCcw, Coffee, Briefcase, SkipForward, Volume2, VolumeX } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 type PomodoroMode = "work" | "shortBreak" | "longBreak";
@@ -9,7 +9,7 @@ type PomodoroMode = "work" | "shortBreak" | "longBreak";
 const MODES = {
   work: { key: "work", duration: 25 * 60, color: "text-rose-500", bg: "bg-rose-500", ring: "ring-rose-500/20" },
   shortBreak: { key: "shortBreak", duration: 5 * 60, color: "text-emerald-500", bg: "bg-emerald-500", ring: "ring-emerald-500/20" },
-  longBreak: { key: "longBreak", duration: 15 * 60, color: "text-violet-500", bg: "bg-violet-500", ring: "ring-violet-500/20" }
+  longBreak: { key: "longBreak", duration: 15 * 60, color: "text-blue-600", bg: "bg-blue-600", ring: "ring-blue-500/20" }
 };
 
 export default function PomodoroTool() {
@@ -148,30 +148,19 @@ export default function PomodoroTool() {
 
   return (
     <div className="container mx-auto px-4 py-8 select-none flex flex-col items-center justify-center min-h-[calc(100vh-8rem)]">
-      <div className="relative group/card transition-all duration-300 max-w-md w-full">
-        
-        {/* Outer glowing halo */}
-        <div className="absolute inset-0 bg-brand-gradient opacity-10 dark:opacity-15 blur-3xl rounded-3xl scale-[1.02] pointer-events-none transition-all duration-300 group-hover/card:opacity-15" />
-        
-        {/* Glowing gradient border line */}
-        <div className="absolute inset-0 bg-brand-gradient opacity-20 dark:opacity-30 rounded-3xl p-[1px] pointer-events-none" />
-
-        {/* The Card */}
-        <div className="relative bg-white/70 dark:bg-[#131a30]/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-2xl rounded-3xl p-8 overflow-hidden flex flex-col items-center">
-          
-          {/* Subtle top border highlight */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-50"></div>
+      <div className="relative max-w-md w-full">
+        <div className="relative bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/10 shadow-sm rounded-lg p-8 overflow-hidden flex flex-col items-center">
 
           {/* Mode Tabs */}
-          <div className="flex space-x-1 mb-8 bg-white/40 dark:bg-[#0a1128]/45 p-1.5 rounded-2xl border border-white/10 dark:border-white/5 shadow-sm">
+          <div className="flex space-x-1 mb-8 bg-slate-100 dark:bg-white/5 p-1.5 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm">
             {(Object.keys(MODES) as PomodoroMode[]).map((m) => (
               <button
                 key={m}
                 onClick={() => switchMode(m)}
-                className={`px-4.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   mode === m
-                    ? `bg-brand-gradient text-white shadow-md shadow-violet-500/15`
-                    : "text-muted-foreground/80 hover:text-foreground hover:bg-white/40 dark:hover:bg-[#1c2541]/40"
+                    ? `bg-brand-gradient text-white shadow-md shadow-blue-900/10`
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white dark:text-slate-400 dark:hover:text-slate-50 dark:hover:bg-white/10"
                 }`}
               >
                 {t(MODES[m].key)}
@@ -201,7 +190,7 @@ export default function PomodoroTool() {
               />
             </svg>
             <div className="absolute flex flex-col items-center">
-              <span className="text-5xl font-extrabold font-mono tracking-tight text-foreground bg-clip-text text-transparent bg-brand-gradient dark:from-white dark:to-slate-200">
+              <span className="text-5xl font-extrabold font-mono tracking-tight text-foreground text-slate-950 dark:text-slate-50">
                 {formatTime(timeLeft)}
               </span>
               <span className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest mt-2">
@@ -214,45 +203,45 @@ export default function PomodoroTool() {
           <div className="flex items-center space-x-4 mb-8">
             <button
               onClick={toggleTimer}
-              className={`flex items-center justify-center w-16 h-16 rounded-full text-white shadow-lg transition-all hover:scale-105 active:scale-95 cursor-pointer bg-brand-gradient shadow-violet-500/20`}
+              className={`flex items-center justify-center w-16 h-16 rounded-full text-white shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer bg-brand-gradient shadow-blue-900/10`}
             >
               {isActive ? <Pause className="w-6 h-6 fill-current text-white" /> : <Play className="w-6 h-6 fill-current text-white ml-1" />}
             </button>
 
             <button
               onClick={resetTimer}
-              className="flex items-center justify-center w-11 h-11 rounded-full bg-white/50 hover:bg-white/80 dark:bg-[#1c2541]/40 dark:hover:bg-[#1c2541]/60 text-foreground border border-white/10 dark:border-white/5 transition-all active:scale-95 shadow-sm cursor-pointer"
+              className="flex items-center justify-center w-11 h-11 rounded-full bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 text-foreground border border-slate-200 dark:border-white/10 transition-all active:scale-95 shadow-sm cursor-pointer"
               title="Reset"
             >
-              <RotateCcw className="w-4.5 h-4.5 text-violet-500" />
+              <RotateCcw className="w-4.5 h-4.5 text-blue-600" />
             </button>
 
             <button
               onClick={skipToNext}
-              className="flex items-center justify-center w-11 h-11 rounded-full bg-white/50 hover:bg-white/80 dark:bg-[#1c2541]/40 dark:hover:bg-[#1c2541]/60 text-foreground border border-white/10 dark:border-white/5 transition-all active:scale-95 shadow-sm cursor-pointer"
+              className="flex items-center justify-center w-11 h-11 rounded-full bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 text-foreground border border-slate-200 dark:border-white/10 transition-all active:scale-95 shadow-sm cursor-pointer"
               title="Skip to next"
             >
-              <SkipForward className="w-4.5 h-4.5 text-violet-500" />
+              <SkipForward className="w-4.5 h-4.5 text-blue-600" />
             </button>
 
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="flex items-center justify-center w-11 h-11 rounded-full bg-white/50 hover:bg-white/80 dark:bg-[#1c2541]/40 dark:hover:bg-[#1c2541]/60 text-foreground border border-white/10 dark:border-white/5 transition-all active:scale-95 shadow-sm cursor-pointer"
+              className="flex items-center justify-center w-11 h-11 rounded-full bg-white hover:bg-slate-50 dark:bg-white/5 dark:hover:bg-white/10 text-foreground border border-slate-200 dark:border-white/10 transition-all active:scale-95 shadow-sm cursor-pointer"
               title={soundEnabled ? "Mute" : "Unmute"}
             >
-              {soundEnabled ? <Volume2 className="w-4.5 h-4.5 text-violet-500" /> : <VolumeX className="w-4.5 h-4.5 text-rose-500" />}
+              {soundEnabled ? <Volume2 className="w-4.5 h-4.5 text-blue-600" /> : <VolumeX className="w-4.5 h-4.5 text-rose-500" />}
             </button>
           </div>
 
           {/* Session Counter panel */}
-          <div className="flex items-center space-x-4 text-xs font-semibold text-muted-foreground/80 bg-white/40 dark:bg-[#0a1128]/35 border border-white/10 dark:border-white/5 px-5 py-3 rounded-2xl shadow-sm w-full">
+          <div className="flex items-center space-x-4 text-xs font-semibold text-muted-foreground/80 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-5 py-3 rounded-lg shadow-sm w-full">
             <div className="flex items-center space-x-1.5 justify-center flex-1">
-              <Briefcase className="w-4 h-4 text-violet-500" />
+              <Briefcase className="w-4 h-4 text-blue-600" />
               <span>{t("sessions")}: <strong className="text-foreground">{sessions}</strong></span>
             </div>
             <span className="text-white/20 dark:text-white/5">|</span>
             <div className="flex items-center space-x-1.5 justify-center flex-1">
-              <Coffee className="w-4 h-4 text-violet-500" />
+              <Coffee className="w-4 h-4 text-blue-600" />
               <span>{t("nextLongBreak")}: <strong className="text-foreground">{4 - (sessions % 4)}</strong></span>
             </div>
           </div>

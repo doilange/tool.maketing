@@ -74,31 +74,19 @@ export default function Authenticator() {
 
   return (
     <div className="container mx-auto px-4 py-12 flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] relative overflow-hidden select-none">
-      
-      <div className="max-w-md w-full relative z-10 animate-in fade-in zoom-in-95 duration-500">
-        <div className="relative group/card transition-all duration-300">
-          
-          {/* Outer glowing halo wrap */}
-          <div className="absolute inset-0 bg-brand-gradient opacity-10 dark:opacity-15 blur-2xl rounded-3xl scale-[1.02] pointer-events-none transition-all duration-300 group-hover/card:opacity-15 dark:group-hover/card:opacity-20" />
-          
-          {/* Glowing gradient border line */}
-          <div className="absolute inset-0 bg-brand-gradient opacity-20 dark:opacity-30 rounded-3xl p-[1px] pointer-events-none" />
-          
-          {/* The Glassmorphism card container */}
-          <div className="relative bg-white/70 dark:bg-[#131a30]/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-2xl rounded-3xl p-8 overflow-hidden">
-            
-            {/* Subtle top border highlight */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-violet-500 to-transparent opacity-50"></div>
+      <div className="max-w-md w-full relative z-10">
+        <div className="relative">
+          <div className="relative bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/10 shadow-sm rounded-lg p-8 overflow-hidden">
             
             <div className="text-center mb-8">
               {/* Glow circle icon container */}
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-gradient p-[1px] mb-4 shadow-lg shadow-violet-500/20 dark:shadow-violet-950/40 transition-transform duration-300 group-hover/card:scale-105">
-                <div className="w-full h-full bg-white dark:bg-[#131a30] rounded-[15px] flex items-center justify-center">
-                  <ShieldCheck className="w-8 h-8 text-violet-500 dark:text-violet-400 animate-pulse-soft" />
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-100 mb-4 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-400/20">
+                <div className="w-full h-full flex items-center justify-center">
+                  <ShieldCheck className="w-8 h-8 text-blue-600 dark:text-blue-300 " />
                 </div>
               </div>
               
-              <h1 className="text-2xl font-bold tracking-tight text-foreground bg-clip-text text-transparent bg-brand-gradient dark:from-white dark:to-slate-200">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground text-slate-950 dark:text-slate-50">
                 {t("title")}
               </h1>
               <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
@@ -111,7 +99,7 @@ export default function Authenticator() {
               {/* Secret key field */}
               <div className="space-y-1.5">
                 <label htmlFor="secret" className="text-xs font-semibold tracking-wide uppercase text-muted-foreground/90 pl-1 flex items-center">
-                  <KeyRound className="w-4 h-4 mr-1.5 text-violet-500" />
+                  <KeyRound className="w-4 h-4 mr-1.5 text-blue-600" />
                   {t("secretKey")}
                 </label>
                 <div className="relative group/input">
@@ -121,7 +109,7 @@ export default function Authenticator() {
                     value={secret}
                     onChange={(e) => setSecret(e.target.value)}
                     placeholder={t("placeholder")}
-                    className="w-full px-4 py-3 bg-white/40 dark:bg-[#0a1128]/40 border border-border/85 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10 transition-all rounded-xl text-foreground font-mono text-center tracking-widest placeholder:tracking-normal focus:outline-none"
+                    className="w-full px-4 py-3 bg-white dark:bg-[#0b1020] border border-slate-200 dark:border-white/10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 transition-all rounded-lg text-foreground font-mono text-center tracking-widest placeholder:tracking-normal focus:outline-none"
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="off"
@@ -130,7 +118,7 @@ export default function Authenticator() {
                 </div>
                 
                 {error && (
-                  <div className="flex items-start gap-2.5 p-3 rounded-xl border border-rose-500/20 bg-rose-500/10 backdrop-blur-md animate-in fade-in slide-in-from-top-1 duration-200 mt-2">
+                  <div className="flex items-start gap-2.5 p-3 rounded-lg border border-rose-500/20 bg-rose-500/10  animate-in fade-in slide-in-from-top-1 duration-200 mt-2">
                     <AlertCircle className="w-4.5 h-4.5 text-rose-500 shrink-0 mt-0.5" />
                     <span className="text-xs font-medium text-rose-600 dark:text-rose-400 leading-normal">
                       {error}
@@ -141,18 +129,18 @@ export default function Authenticator() {
 
               {/* Glowing Glass Code Display Area */}
               {code && !error && (
-                <div className="bg-white/40 dark:bg-[#0a1128]/40 border border-white/15 dark:border-white/5 rounded-2xl p-6 text-center relative overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-6 text-center relative overflow-hidden animate-in zoom-in-95 duration-300">
                   <div className="flex flex-col items-center justify-center space-y-4">
                     
                     {/* Glossy Gradient Code Text */}
-                    <div className="text-5xl font-mono font-extrabold tracking-[0.2em] text-foreground bg-clip-text text-transparent bg-brand-gradient dark:from-white dark:to-slate-200 drop-shadow-sm flex items-center justify-center ml-2">
+                    <div className="text-5xl font-mono font-extrabold tracking-[0.2em] text-foreground text-slate-950 dark:text-slate-50 drop-shadow-sm flex items-center justify-center ml-2">
                       {code.slice(0, 3)}
                       <span className="text-muted-foreground/30 mx-1">-</span>
                       {code.slice(3, 6)}
                     </div>
                     
                     {/* Sub-bar displaying timer & Copy button */}
-                    <div className="flex items-center justify-between w-full mt-4 bg-white/50 dark:bg-[#0a1128]/50 backdrop-blur-sm rounded-xl p-2 border border-white/10 dark:border-white/5 shadow-sm">
+                    <div className="flex items-center justify-between w-full mt-4 bg-white dark:bg-[#0b1020] rounded-lg p-2 border border-slate-200 dark:border-white/10 shadow-sm">
                       <div className="flex items-center space-x-3 px-3 py-1.5">
                         <div className="relative w-6 h-6 flex items-center justify-center">
                           <svg className="w-6 h-6 transform -rotate-90" viewBox="0 0 36 36">
@@ -166,7 +154,7 @@ export default function Authenticator() {
                               strokeWidth="3.5"
                             />
                             <circle
-                              className={`${timeLeft <= 5 ? "text-rose-500 animate-pulse" : "text-violet-500 dark:text-violet-400"} transition-all duration-1000 ease-linear`}
+                              className={`${timeLeft <= 5 ? "text-rose-500 animate-pulse" : "text-blue-600 dark:text-blue-300"} transition-all duration-1000 ease-linear`}
                               strokeDasharray={`${progressPercentage}, 100`}
                               cx="18"
                               cy="18"
@@ -185,10 +173,10 @@ export default function Authenticator() {
 
                       <button
                         onClick={handleCopy}
-                        className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 font-semibold text-xs focus:outline-none active:scale-95 cursor-pointer ${
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-300 font-semibold text-xs focus:outline-none active:scale-95 cursor-pointer ${
                           copied 
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 shadow-sm shadow-emerald-500/5" 
-                          : "bg-brand-gradient text-white hover:opacity-90 shadow-md shadow-violet-500/15"
+                          : "bg-brand-gradient text-white hover:opacity-90 shadow-md shadow-blue-900/10"
                         }`}
                       >
                         {copied ? (
@@ -212,8 +200,8 @@ export default function Authenticator() {
             {/* Divider privacy footer */}
             <div className="mt-8 pt-6 relative">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-white/20 dark:via-white/5 to-transparent"></div>
-              <p className="text-xs text-muted-foreground flex items-center justify-center bg-white/40 dark:bg-[#0a1128]/30 border border-white/10 dark:border-white/5 py-2.5 rounded-xl w-full font-medium">
-                <ShieldCheck className="w-4 h-4 mr-1.5 text-violet-500 dark:text-violet-400/80" />
+              <p className="text-xs text-muted-foreground flex items-center justify-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 py-2.5 rounded-lg w-full font-medium">
+                <ShieldCheck className="w-4 h-4 mr-1.5 text-blue-600 dark:text-blue-300/80" />
                 {t("privacyNotice")}
               </p>
             </div>

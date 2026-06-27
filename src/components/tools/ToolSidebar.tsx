@@ -31,8 +31,8 @@ export default function ToolSidebar({ activeTab, onTabChange }: SidebarProps) {
   const t = useTranslations("Sidebar");
   
   return (
-    <div className="w-full md:w-64 flex-shrink-0 border-r border-white/20 dark:border-white/5 bg-white/45 dark:bg-[#131a30]/45 backdrop-blur-xl z-20">
-      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-y-auto p-4 space-y-1.5 scrollbar-thin scrollbar-thumb-muted">
+    <aside className="w-full flex-shrink-0 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-[#111827] md:w-64 md:border-b-0 md:border-r">
+      <div className="flex gap-1 overflow-x-auto p-3 md:h-[calc(100vh-4rem)] md:flex-col md:gap-1 md:overflow-y-auto md:p-4">
         {TOOLS_LIST.map((tool) => {
           const Icon = tool.icon;
           const isActive = activeTab === tool.id;
@@ -41,18 +41,18 @@ export default function ToolSidebar({ activeTab, onTabChange }: SidebarProps) {
             <button
               key={tool.id}
               onClick={() => onTabChange(tool.id)}
-              className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer active:scale-95 ${
+              className={`flex min-h-10 shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-colors cursor-pointer md:w-full ${
                 isActive 
-                  ? "bg-brand-gradient text-white shadow-md shadow-violet-500/15 scale-[1.01]" 
-                  : "text-muted-foreground/80 hover:bg-white/60 dark:hover:bg-[#1c2541]/60 hover:text-foreground hover:translate-x-1"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-50"
               }`}
             >
-              <Icon className={`w-4.5 h-4.5 transition-colors ${isActive ? "text-white animate-pulse-soft" : "text-violet-500/70 dark:text-violet-400/60"}`} />
+              <Icon className={`h-4.5 w-4.5 transition-colors ${isActive ? "text-white" : "text-slate-400 dark:text-slate-500"}`} />
               <span className="truncate">{t(tool.id)}</span>
             </button>
           );
         })}
       </div>
-    </div>
+    </aside>
   );
 }
